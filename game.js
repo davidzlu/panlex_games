@@ -41,25 +41,28 @@ $(document).ready(function() {
   function createFormElement() {
     var form = $('<form name="userTranslation" action=""></form>');
     form.append('<input type="text" name="translation"><br/>');
-    form.append('<button name="submit">Submit</button>');
+    form.append('<button type="button" name="submit">Submit</button>');
+
     return form
   }
 
   function displayQuestion() {
     curScreen.fadeOut(function() {
+      curScreen = $("#translate");
       $("#question").remove();
       var question = createQuestionElement();
-      $("#translate").append(question).fadeIn();
+      curScreen.append(question).fadeIn();
+      $("button[name=submit]").on("click", displayEnd);
     });
   }
 
   function displayEnd() {
-    $(".screen").fadeOut(function() {
-      $("#end").fadeIn();
+    curScreen.fadeOut(function() {
+      curScreen = $("#end");
+      curScreen.fadeIn();
     });
   }
 
   $("#end:last-child").on("click", displayQuestion);
-  $("#translate input[name=submit]").on("click", displayEnd);
-  $("button").on("click", displayQuestion);
+  $("#start button[name=start]").on("click", displayQuestion);
 });
