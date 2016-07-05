@@ -23,9 +23,10 @@ $(document).ready(function() {
   var activityType = "evaluate";
   var translationData = placeholderData,
       translationInput = placeholderInput;
+  
+  var sourceLanguage, targetLanguage; // Assigned by user input
   var nextWord = "Hello"; // Tracks next word to translate. Maybe an int? 
-  var sourceLanguage = "English", 
-      targetLanguage = "Pig Latin"; // Assigned by user input
+  
   var curScreen = $("#start");
   var ALGORITHM_COUNT = 2; // Number of algorithms to evaluate
   var algoList = [1, 2]
@@ -67,9 +68,16 @@ $(document).ready(function() {
     return radioList;
   }
 
+  function createQuery() {
+    var languages = $("form[name=languageSelect] input");
+    sourceLanguage = languages[0].value;
+    targetLanguage = languages[1].value;
+    // return created query
+  }
+
   function displayQuestion() {
     curScreen.fadeOut(function() {
-      // Create and send query
+      createQuery();
       curScreen = $("#translate");
       $("#question").remove();
       var question = createQuestionElement();
