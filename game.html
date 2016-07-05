@@ -15,7 +15,13 @@
         <h1>Translation Game</h1>
         <button name="start">Start</button>
       </div>
-      <div class="screen" id="languages"></div>
+      <div class="screen" id="languages" style="display: none;">
+        <form name="languageSelect" action="">
+          Translate from: <input type="text" name="sourceLanguage"><br/>
+          Translate to: <input type="text" name="targetLanguage"><br/>
+          <button type="button">Next</button>
+        </form>
+      </div>
       <div class="screen" id="translate"></div>
       <div class="screen" id="end" style="display: none;">
         <h1>Thank You!</h1>

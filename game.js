@@ -51,7 +51,7 @@ $(document).ready(function() {
   }
 
   function createFormElement() {
-    var form = $('<form name="userTranslation" action="/receiver.py" method="post">');
+    var form = $('<form name="userTranslation" action="receiver.py" method="post">');
     form.append('<input type="text" name="translation"><br/>');
     form.append('<button type="button" name="submit">Submit</button>');
     return form
@@ -69,6 +69,7 @@ $(document).ready(function() {
 
   function displayQuestion() {
     curScreen.fadeOut(function() {
+      // Create and send query
       curScreen = $("#translate");
       $("#question").remove();
       var question = createQuestionElement();
@@ -77,13 +78,23 @@ $(document).ready(function() {
     });
   }
 
+  function displayLanguages() {
+    curScreen.fadeOut(function() {
+      // Set game type
+      curScreen = $("#languages");
+      curScreen.fadeIn();
+    });
+  }
+
   function displayEnd() {
     curScreen.fadeOut(function() {
+      // Send data to server
       curScreen = $("#end");
       curScreen.fadeIn();
     });
   }
 
+  $("#start button").on("click", displayLanguages);
+  $("#languages button").on("click", displayQuestion);
   $("#end:last-child").on("click", displayQuestion);
-  $("#start button[name=start]").on("click", displayQuestion);
 });
