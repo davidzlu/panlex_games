@@ -26,13 +26,14 @@ $(document).ready(function() {
   
   var sourceLanguage, targetLanguage; // Assigned by user input
   var nextWord = "Hello"; // Tracks next word to translate. Maybe an int? 
-  
+
   var curScreen = $("#start");
   var ALGORITHM_COUNT = 2; // Number of algorithms to evaluate
   var algoList = [1, 2]
 
 
-  function createQuestionElement() { // This could change for different tasks
+  function createQuestionElement() {
+    /* Dynamically creates form for accepting user input. */
     var question = $('<div id="question">');
     if (activityType == "translate") {
       var questionTitle = $('<h1>Translate</h1>'),
@@ -52,6 +53,8 @@ $(document).ready(function() {
   }
 
   function createFormElement() {
+    /* Helper function for createQuestionElement. Creates an HTML form
+       element that accepts text input. */
     var form = $('<form name="userTranslation" action="receiver.py" method="post">');
     form.append('<input type="text" name="translation"><br/>');
     form.append('<button type="button" name="submit">Submit</button>');
@@ -59,6 +62,9 @@ $(document).ready(function() {
   }
 
   function createRadioElement() {
+    /* Helper function for createQuestionInput. Creates a div element that
+       contains radio buttons.
+    */
     var radioList = $('<div id="radioList">');
     for (var i=0; i < ALGORITHM_COUNT; i++) {
       var item = $('<input type="radio" name="translation">' + algoList[i] + '</input><br/>');
@@ -69,6 +75,8 @@ $(document).ready(function() {
   }
 
   function createQuery() {
+    /* Helper function for displayQuestion. Parses language input form
+       and sets up a query for PanLex API. */
     var languages = $("form[name=languageSelect] input");
     sourceLanguage = languages[0].value;
     targetLanguage = languages[1].value;
@@ -76,6 +84,7 @@ $(document).ready(function() {
   }
 
   function displayQuestion() {
+    /* Handles transition from language input screen to user input screen. */
     curScreen.fadeOut(function() {
       createQuery();
       curScreen = $("#translate");
@@ -87,6 +96,7 @@ $(document).ready(function() {
   }
 
   function displayLanguages() {
+    /* Handles transition from start screen to language input screen. */
     curScreen.fadeOut(function() {
       // Set game type
       curScreen = $("#languages");
@@ -95,6 +105,7 @@ $(document).ready(function() {
   }
 
   function displayEnd() {
+    /* Handles transition from translation data input to end screen. */
     curScreen.fadeOut(function() {
       // Send data to server
       curScreen = $("#end");
