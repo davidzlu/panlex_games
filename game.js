@@ -18,32 +18,53 @@ $(document).ready(function() {
                            "trtt": "userTranslation",
                            // Other parameters sent
                          };
+  var placeholderAlgoData = {};
 
-  // var activityType; flag for choosing activity?
+  var activityType = "evaluate";
   var translationData = placeholderData,
       translationInput = placeholderInput;
   var nextWord = "Hello"; // Tracks next word to translate. Maybe an int? 
   var sourceLanguage = "English", 
       targetLanguage = "Pig Latin"; // Assigned by user input
   var curScreen = $("#start");
+  var ALGORITHM_COUNT = 2; // Number of algorithms to evaluate
+  var algoList = [1, 2]
 
 
   function createQuestionElement() { // This could change for different tasks
-    var question = $('<div id="question"><h1>Translate</h1></div>'),
-        sourceHeader = $('<h3>' + sourceLanguage + '</h3>'),
-        sourceWord = $('<p>' + nextWord + '</p>'),
-        targetHeader = $('<h3>' + targetLanguage + '</h3>'),
-        form = createFormElement();
-    question.append(sourceHeader, sourceWord, targetHeader, form);
+    var question = $('<div id="question">');
+    if (activityType == "translate") {
+      var questionTitle = $('<h1>Translate</h1>'),
+      sourceHeader = $('<h3>' + sourceLanguage + '</h3>'),
+      sourceWord = $('<p>' + nextWord + '</p>'),
+      targetHeader = $('<h3>' + targetLanguage + '</h3>'),
+      form = createFormElement();
+    } else {
+      var questionTitle = $('<h1>Evaluate</h1>'),
+      sourceHeader = $('<h3>' + sourceLanguage + '</h3>'),
+      sourceWord = $('<p>' + nextWord + '</p>'),
+      targetHeader = $('<h3>' + targetLanguage + '</h3>'),
+      form = createRadioElement();
+    }
+    question.append(questionTitle, sourceHeader, sourceWord, targetHeader, form);
     return question;
   }
 
   function createFormElement() {
-    var form = $('<form name="userTranslation" action=""></form>');
+    var form = $('<form name="userTranslation" action="/receiver.py" method="post">');
     form.append('<input type="text" name="translation"><br/>');
     form.append('<button type="button" name="submit">Submit</button>');
-
     return form
+  }
+
+  function createRadioElement() {
+    var radioList = $('<div id="radioList">');
+    for (var i=0; i < ALGORITHM_COUNT; i++) {
+      var item = $('<input type="radio" name="translation">' + algoList[i] + '</input><br/>');
+      radioList.append(item);
+    }
+    radioList.append('<button type="button" name="submit">Submit</button>');
+    return radioList;
   }
 
   function displayQuestion() {
