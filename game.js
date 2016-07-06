@@ -1,23 +1,21 @@
 $(document).ready(function() {
-  //import * as index from "./node-panlex/index.js"
-
   // Send data to server function, use JSON format
   // Pull data from server, possibly use panlex JS library
   // Painting and display/screen transition function
-
+  // Need to go from language name to uid, or have people enter uid
   // curl http://api.panlex.org/ex -d {fill in with language requests}
-  //use $.get/$.ajax for data request
+  
   var placeholderData = { 
-                          "resultType": "ex",
-                          "result": [],
-                          "resultNum": 0,
-                          "resultMax": 2000
-                        }; //TODO: Figure out format data will come in as
+    "resultType": "ex",
+    "result": [],
+    "resultNum": 0,
+    "resultMax": 2000
+  }; //TODO: Figure out format data will come in as
   var placeholderInput = {
-                           "uid": targetLanguage,
-                           "trtt": "userTranslation",
-                           // Other parameters sent
-                         };
+    "uid": targetLanguage,
+    "trtt": "userTranslation",
+    // Other parameters sent
+  };
   var placeholderAlgoData = {};
 
   var activityType = "evaluate";
@@ -63,8 +61,7 @@ $(document).ready(function() {
 
   function createRadioElement() {
     /* Helper function for createQuestionInput. Creates a div element that
-       contains radio buttons.
-    */
+       contains radio buttons. */
     var radioList = $('<div id="radioList">');
     for (var i=0; i < ALGORITHM_COUNT; i++) {
       var item = $('<input type="radio" name="translation">' + algoList[i] + '</input><br/>');
@@ -76,11 +73,46 @@ $(document).ready(function() {
 
   function createQuery() {
     /* Helper function for displayQuestion. Parses language input form
-       and sets up a query for PanLex API. */
+       and sets up a query for PanLex API using AJAX. */
+    var xhttp;
+    if (window.XMLHttpRequest) {
+      xhttp = new XMLHttpRequest();
+    } else {
+      xhttp = new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    var panlex_url = "http://api.panlex.org/ex";
     var languages = $("form[name=languageSelect] input");
     sourceLanguage = languages[0].value;
     targetLanguage = languages[1].value;
-    // return created query
+    var parameters = {
+      "uid": "rus-000",
+      "trtt": "tree",
+      "indent": true
+    };
+    var query = { 
+      data: parameters,
+      dataType: "json",
+      method: "POST",
+      url: panlex_url
+    };
+    var results = $.ajax(query)
+      .done(function() {
+        alert("success");
+      })
+      .fail(function() {
+        alert("fail");
+      });
+    console.log(results);
+    return results;
+  }
+
+  function displayLanguages() {
+    /* Handles transition from start screen to language input screen. */
+    curScreen.fadeOut(function() {
+      // Set game type
+      curScreen = $("#languages");
+      curScreen.fadeIn();
+    });
   }
 
   function displayQuestion() {
@@ -92,15 +124,6 @@ $(document).ready(function() {
       var question = createQuestionElement();
       curScreen.append(question).fadeIn();
       $("button[name=submit]").on("click", displayEnd);
-    });
-  }
-
-  function displayLanguages() {
-    /* Handles transition from start screen to language input screen. */
-    curScreen.fadeOut(function() {
-      // Set game type
-      curScreen = $("#languages");
-      curScreen.fadeIn();
     });
   }
 
