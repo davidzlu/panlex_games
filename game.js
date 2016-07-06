@@ -1,4 +1,6 @@
 $(document).ready(function() {
+  //var panlex = require("panlex");
+
   // Send data to server function, use JSON format
   // Pull data from server, possibly use panlex JS library
   // Painting and display/screen transition function
@@ -18,7 +20,7 @@ $(document).ready(function() {
   };
   var placeholderAlgoData = {};
 
-  var activityType = "evaluate";
+  var activityType = "translate";
   var translationData = placeholderData,
       translationInput = placeholderInput;
   
@@ -84,26 +86,30 @@ $(document).ready(function() {
     var languages = $("form[name=languageSelect] input");
     sourceLanguage = languages[0].value;
     targetLanguage = languages[1].value;
-    var parameters = {
-      "uid": "rus-000",
-      "trtt": "tree",
-      "indent": true
-    };
-    var query = { 
-      data: parameters,
-      dataType: "json",
-      method: "POST",
-      url: panlex_url
-    };
-    var results = $.ajax(query)
-      .done(function() {
-        alert("success");
-      })
-      .fail(function() {
-        alert("fail");
-      });
-    console.log(results);
-    return results;
+  //   var parameters = {
+  //     "uid": "rus-000",
+  //     "trtt": "tree",
+  //     "indent": true
+  //   };
+  //   var query = { 
+  //     data: parameters,
+  //     dataType: "json",
+  //     method: "POST",
+  //     url: panlex_url
+  //   };
+  //   var results = $.ajax(query)
+  //     .done(function() {
+  //       alert("success");
+  //     })
+  //     .fail(function() {
+  //       alert("fail");
+  //     });
+  //   console.log(results);
+
+  //   panlex.query("/ex", parameters, function(err, data) {
+  //     alert("success");
+  //   });
+  //   return results;
   }
 
   function displayLanguages() {
