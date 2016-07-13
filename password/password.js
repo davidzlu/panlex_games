@@ -1,6 +1,6 @@
 $(document).ready(function() {
   
-  var sourceLanguage; // Assigned by user input
+  var sourceLanguage = "default language"; // Assigned by user input
   var curScreen = $("#start");
   var role = "password";
   var password = null;
@@ -50,13 +50,14 @@ $(document).ready(function() {
     var waitScreen = $('<div>', { id: "wait"});
     var message, callback;
     if (role == "password") {
-      message = $("<p>Waiting for guess...</p>");
+      message = $("<p>Waiting for guess...</p>");//<p>Playing in " + sourceLanguage + "</p>");
       callback = displayPassword;
     } else if (role == "guess") {
-      message = $("<p>Waiting for clue...</p>");
+      message = $("<p>Waiting for clue...</p>");//<p>Playing in " + sourceLanguage + "</p>");
       callback = displayGuess;
     }
     waitScreen.append(message);
+    //curScreen.append("Playing in "+sourceLanguage);
     message.on("click", callback);
     return waitScreen;
   }
@@ -74,7 +75,7 @@ $(document).ready(function() {
   function createSwapScreen() {
     $("#swapContainer").remove();
     var swapScreen = $("<div>", { id: "swapContainer"});
-    var message = $("<p>Switching roles...</p>");
+    var message = $("<p>Switching roles...</p>");//<p>Playing in "+sourceLanguage+"</p>");
     var swapButton = $("<button>Switch</button>", { type:"button", name:"swapButton"});
     if (role == "password") {
       role = "guess";
@@ -92,6 +93,7 @@ $(document).ready(function() {
         case "matching":
           curScreen = $("#password");
           curScreen.append(createPasswordForm()).fadeIn();
+          //curScreen.append("Playing in "+sourceLanguage);
           break;
         case "password":
           if (password == null) {
@@ -136,12 +138,17 @@ $(document).ready(function() {
     });
   }
 
+  function setSourceLanguage(){
+    //
+  }
+
   function displayGuess() {
     curScreen.fadeOut(function() {
       switch (curScreen.attr("id")) {
         case "matching":
           curScreen = $("#waiting");
           curScreen.append(createWaitScreen()).fadeIn();
+          //curScreen.append("Playing in "+sourceLanguage);
           break;
         case "waiting":
           curScreen = $("#guess");
@@ -157,6 +164,7 @@ $(document).ready(function() {
           if (guess == password) {
             curScreen = $("#swap");
             curScreen.append(createSwapScreen()).fadeIn();
+
           } else {
             curScreen = $("#matching");
             displayGuess();
@@ -182,7 +190,8 @@ $(document).ready(function() {
   function displayMatching() {
     curScreen.fadeOut(function() {
       curScreen = $("#matching");
-      curScreen.append('<p>Matching...</p>');
+      curScreen.append('<p>Matching...</p>');//<p>Playing in '+sourceLanguage+'</p>');
+      //curScreen.append("Playing in "+sourceLanguage);
       $('p').on("click", displayPlayScreen);
       curScreen.fadeIn();
     });
@@ -198,7 +207,14 @@ $(document).ready(function() {
   }
 
   $("#start button").on("click", displayLanguages);
-  $("#languages button").on("click", displayMatching);
+
+  /*collects sourceLanguage from user input and sets footer language message*/
+  $("#languages button").mousedown(function(){
+    sourceLanguage = $("#sourceLanguage").val();
+    $("p:last").text("Playing in "+sourceLanguage);
+  });
+
+  $("#languages button").on("mouseup", displayMatching);
   $("#container").on("click", "button[name=submit]", displayPlayScreen);
   $("#end:last-child").on("click", displayPlayScreen);
 });
