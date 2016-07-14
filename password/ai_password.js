@@ -3,11 +3,11 @@ $(document).ready(function() {
   var sourceLanguage = "default language"; // Assigned by user input
   var curScreen = $("#start");
   var role = "guess";
-  var passwords = ["cat","sun","hello"];
+  var passwords = ["cat","light","hi"];
   var password = passwords[Math.floor(Math.random()*3)];
   var catClues = ["feline","whiskers"];
-  var sunClues = ["bright","day"];
-  var helloClues = ["greeting","wave"]
+  var lightClues = ["bright","day"];
+  var hiClues = ["greeting","wave"]
   var guess = "default guess";
   var input;
 
@@ -27,13 +27,21 @@ $(document).ready(function() {
     switch (password){
       case "cat":
         return catClues[index];
-      case "sun":
-        return sunClues[index];
-      case "hello":
-        return helloClues[index];
+      case "light":
+        return lightClues[index];
+      case "hi":
+        return hiClues[index];
       default:
         return "none";
     }
+  }
+
+  function star(){
+    var starized = "";
+    for(var i = 0; i < password.length; i++){
+      starized = starized + "*";
+    }
+    return starized;
   }
 
   function createFormElement(inputName, formAction="") {
@@ -50,15 +58,6 @@ $(document).ready(function() {
     return form
   }
 
-  function createPasswordForm() {
-    
-    var passElem = $("<div>", { id: "passEntry"});
-    var passFormTitle = $("<h2>Enter a password</h2>");
-    var passForm = createFormElement("password");
-    passElem.append(passFormTitle, passForm);
-    return passElem;
-  }
-
   function createClueForm() {
     var clueElem = $('<div>', { id: "clueEntry"});
     var clueFormTitle = $("<h2>Enter a clue</h2>");
@@ -72,15 +71,19 @@ $(document).ready(function() {
     $("#wait").remove();
     var waitScreen = $('<div>', { id: "wait"});
     var message, callback, newClueButton;
-    if (role == "password") {
-      message = $("<p>Waiting for guess...</p>");
-      callback = displayPassword;
-    } else if (role == "guess") {
       message = $("<h3>That's not the password, try again!</h3>");
       newClueButton = $("<button>Get another clue</button>",{type:"button",name:"newClueButton"});
       callback = displayGuess;
-    }
-    waitScreen.append(message,newClueButton);
+      var giveUp = $("<button>Forfeit this password</button>", { type:"button", name:"giveUp"});
+      giveUp.on("click",function(){
+        var oldPass = password;
+        do{
+          password = passwords[Math.floor(Math.random()*3)];
+        }while(oldPass==password);
+        curScreen = $("#waiting");
+        displayGuess()
+      });
+    waitScreen.append(message,newClueButton,giveUp);
     newClueButton.on("click", callback);
     return waitScreen;
   }
@@ -88,10 +91,19 @@ $(document).ready(function() {
   function createGuessForm() {
     $("#guessEntry").remove();
     var guessEntry = $('<div>', { id: "guessEntry"});
-    var title = $("<h2>Type in a guess</h2>");
+    var title = $("<h2>Type in a guess for "+star()+"</h2>");
     var clue = $("<p>Clue: " + getClue(password) + "</p>");
     var form = createFormElement("guessForm");
-    guessEntry.append(title, clue, form);
+    var giveUp = $("<button>Forfeit this password</button>", { type:"button", name:"giveUp"});
+    giveUp.on("click",function(){
+      var oldPass = password;
+      do{
+        password = passwords[Math.floor(Math.random()*3)];
+      }while(oldPass==password);
+      curScreen = $("#waiting");
+      displayGuess()
+    });
+    guessEntry.append(title, clue, form, giveUp);
     return guessEntry;
   }
 
@@ -103,69 +115,7 @@ $(document).ready(function() {
     var againButton = $("<button>Play Again!</button>", { type:"button", name:"againButton"});
     winScreen.append(message, againButton);
     againButton.on("click", displayLanguages);
-    //console.log("message: "+message.text());
     return winScreen;
-  }
-
-
-  function createSwapScreen() {
-    console.log("in createSwapScreen()");
-    $("#swapContainer").remove();
-    var swapScreen = $("<div>", { id: "swapContainer"});
-    var message = $("<p>Switching roles...</p>");
-    var swapButton = $("<button>Switch</button>", { type:"button", name:"swapButton"});
-    if (role == "password") {
-      role = "guess";
-    } else if (role == "guess") {
-      role = "password";
-    }
-    swapScreen.append(message, swapButton);
-    swapButton.on("click", displayPlayScreen);
-    return swapScreen;
-  }
-
-  function displayPassword() {
-    curScreen.fadeOut(function() {
-      switch (curScreen.attr("id")) {
-        case "matching":
-          curScreen = $("#password");
-          curScreen.append(createPasswordForm()).fadeIn();
-          break;
-        case "password":
-          if (password == null) {
-            password = $('form[name=userInput] input')[0].value;
-          }
-          curScreen = $("#clue");
-          $('#password').empty();
-          var endButton = $('<button type="button" name="endButton">End Round</button>');
-          curScreen.append(createClueForm(), endButton).fadeIn();
-          $('button[name=endButton]').on("click", function() {
-            if(guess = password){
-               //do something really obvious
-            }
-            displayPassword();
-          });
-          break;
-        case "clue":
-          curScreen = $("#waiting");
-          $('#clue').empty();
-          curScreen.append(createWaitScreen(), endButton).fadeIn();
-          break;
-        case "waiting":
-          if (guess == password) {
-            curScreen = $("#swap");
-            curScreen.append(createSwapScreen()).fadeIn();
-          } else {
-            curScreen = $("#password");
-            displayPassword();
-          }
-          break;
-        default:
-          curScreen = $("#matching");
-          guess = "defaultGuess"
-          displayPassword();
-      }
-    });
   }
 
   function displayLanguages() {
@@ -191,21 +141,15 @@ $(document).ready(function() {
           break;
         case "waiting":
           curScreen = $("#guess");
-          $("button[name=endButton]").remove();
-          var endButton = $('<button type="button" name="endButton">End Round</button>');
-          curScreen.append(createGuessForm()).fadeIn();//, endButton).fadeIn();
-          //$('button[name=endButton]').on("click", function() {
-          //  guess = password;
-          //  displayGuess();
-          //});
+          curScreen.append(createGuessForm()).fadeIn();
           break;
         case "guess":        
           console.log("before: "+guess);
           $('button[name=submitButton]').on("click", getUserGuess());
           console.log("after: "+guess);
           if (guess == password) {
-            curScreen = $("#win");//swap");         
-            curScreen.append(createWinScreen()).fadeIn();//createSwapScreen()).fadeIn();
+            curScreen = $("#win");         
+            curScreen.append(createWinScreen()).fadeIn();
           } else {
             curScreen = $("#matching");
             displayGuess();
@@ -253,12 +197,15 @@ $(document).ready(function() {
     if(e.which == 13){
        if($("#start button").is(":visible")){
          $("#start button").focus().click();
+       }else if("#guess".is(":visible")){
+         $("#container").focus.click();
        }
        return false;
     }
   });
 
   /*collects sourceLanguage from user input and sets footer language message*/
+  
   $("#languages button").mousedown(function(){
     sourceLanguage = $("#sourceLanguage").val();
     $("p:last").text("Playing in "+sourceLanguage);
@@ -274,5 +221,4 @@ $(document).ready(function() {
   $("#container").on("click", "button[name=submit]", displayPlayScreen);
   $("#end:last-child").on("click", displayPlayScreen);
 });
-
 
