@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="utf-8">
+    <title>Password</title>
     <link rel="stylesheet" type="text/css" href="game.css"></link>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
-    <script src="password.js"></script>
   </head>
   <body>
     <div id="container">
@@ -23,15 +24,19 @@
       </div>
       <div class="screen" id="matching"></div>
       <div class="screen" id="translate"></div>
-      <div id="passwordContainer">
-        <div class="screen" id="password"></div>
-        <div class="screen" id="clue"></div>
+      <div class="screen" id="passwordContainer">
+        <div id="password"></div>
+        <div id="clue"></div>
       </div>
-      <div id="guesserContainer">
-        <div class="screen" id="guess"></div>
+      <div class="screen" id="guesserContainer">
+        <div id="guess"></div>
+        Clues:<br/><ol id="clueList"></ol>
       </div>
       <div class="screen" id="waiting"></div>
       <div class="screen" id="swap" style="display: none;"></div>
     </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/client.js"></script>
   </body>
 </html>
