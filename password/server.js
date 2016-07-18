@@ -1,6 +1,7 @@
 var http = require("http");
 var socketio = require("socket.io");
 var express = require("express");
+//var pg = require("passwordGame");
 
 var app = express();
 var server = http.createServer(app);
@@ -17,16 +18,27 @@ server.listen(PORT, function() {
 io.on('connection', onConnection);
 
 function onConnection(sock) {
+    /* Function has 3 tasks:
+        1) Sends message to clients on connection
+        2) Sets up event listeners
+        3) Matches players in pairs
+    */
     sock.emit('msg', 'Hello, You are playing Password!');
+	sock.on('language', function(lang) {
+		// pg.setLanguage();
+	});
     sock.on('password', function(pword) {
-        // Refer to game logic file
+        // pg.setPassword();
     });
     sock.on('guess', function() {
-        // Refer to game logic file
+        // pg.onGuess();
     });
     sock.on('clue', function() {
-        // Refer to game logic file
+        // pg.onClue();
     });
+	sock.on('submit', function() {
+		// pg.onSubmit(); 
+	});
 
     if (waitingPlayer) {
         waitingPlayer = null;

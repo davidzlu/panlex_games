@@ -3,22 +3,22 @@
   <head>
     <meta charset="utf-8">
     <title>Password</title>
-    <link rel="stylesheet" type="text/css" href="game.css"></link>
+    <link rel="stylesheet" type="text/css" href="css/main.css"></link>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
   </head>
   <body>
     <div id="container">
       <div id="title">
-        <h1>Title</h1>
-      </div>
-      <br/>
+        <h1>The Password Game</h1>
+        <h4>Powered by PanLex</h4>
+      </div><br/>
       <div class="screen" id="start">
         <h1>Password</h1>
         <button name="start">Start</button>
       </div>
       <div class="screen" id="languages" style="display: none;">
         <form name="languageSelect" action="">
-          Language to use: <input type="text" name="sourceLanguage"><br/>
+          Language to use: <input type="text" id="sourceLanguage"><br/>
           <button type="button">Next</button>
         </form>
       </div>
@@ -34,9 +34,14 @@
       </div>
       <div class="screen" id="waiting"></div>
       <div class="screen" id="swap" style="display: none;"></div>
+      <div class="screen" id="win" style="display: none;"></div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="js/client.js"></script>
   </body>
+  <footer>
+    <p>Once you have selected a language, it will be displayed here!</p>
+    <a href="http://new.panlex.org">Quit and return to PanLex Website</a>
+  </footer>
 </html>
