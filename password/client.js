@@ -201,4 +201,5 @@ $(document).ready(function() {
   $("#languages button").on("click", displayMatching);
   $("#container").on("click", "button[name=submit]", displayPlayScreen);
   $("#end:last-child").on("click", displayPlayScreen);
+
 });
