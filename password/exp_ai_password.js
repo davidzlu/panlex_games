@@ -1,73 +1,59 @@
 $(document).ready(function() {
-  var panlex = require('panlex');
+  
   var sourceLanguage = "default language"; // Assigned by user input
   var curScreen = $("#start");
   var role = "guess";
   var passwords = ["cat","light","hi"];
-  var password;
-  var password_id;
+  var password = getPassword();
   var catClues = ["feline","whiskers"];
   var lightClues = ["bright","day"];
   var hiClues = ["greeting","wave"]
   var guess = "default guess";
   var input;
-  var clue;
+
+  function getGuess() {
+    // Should retrieve guess from server
+    return guess;
+  }
 
   function getPassword(){
     // Should retrieve password from server
-    var count=230000;
-    offset = Math.floor(count*Math.random()+20000);
-    console.log(offset);
-    var stop = false;
-    //var password;
-    panlex.query('/ex',{uid:'eng-000',offset:offset,limit:30},function(err,data){
-	data.result.forEach(function (ex) {
-            var wrd = ex.tt;
-            if(wrd.indexOf(" ")==-1 && wrd.indexOf("\'"==-1)&&stop==false&&wrd.length<12){
-                console.log("just approved: "+wrd);                        
-                if(stop==false){
-                    password = wrd;
-                    password_id = ex.ex;
-                    console.log("final password: "+password);
-                    stop=true;
-                    console.log("stop set to "+stop);
-                    displayPlayScreen();
-                }
-            }
-        });
-    });
+    //$.ajax({
+      //type: "POST",
+      //crossOrigin: true,
+      //url: 'https://api.panlex.org',
+      //data: {}
+    //)};
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST","https://api.panlex.org",true);
+    xhr.setRequestHeader('Access-Control-Allow-Origin', '*');
+    xhr.setRequestHeader('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE, OPTIONS');
+    xhr.setRequestHeader('Access-Control-Allow-Headers', 'Content-Type, Content-Range, Content-Disposition, Content-Description');
+    //xhr.open("POST","https://api.panlex.org",true);
+    xhr.send({});
+    console.log(xhr.status);
+    password = passwords[Math.floor(Math.random()*3)];
+    return password;
   }
 
   function getClue(password) {
     // Should retrieve clue from server
-    clue = "";
-    console.log("password_id: "+password_id);
-    panlex.query('/ex',{"uid":"eng-000","trex":password_id},function(err,data){
-        console.log("data: "+JSON.stringify(data, null, 4));
-        data.result.forEach(function(trtt){
-            console.log("trtt: "+trtt.tt);
-            clue=clue+"\n"+ trtt.tt;
-
-        });
-    });
-    //var index;
-    //if(Math.random()>0.5){
-      //index = 1;
-    //}else{
-      //index = 0;
-    //}
-    //switch (password){
-      //case "cat":
-        //return catClues[index];
-      //case "light":
-        //return lightClues[index];
-      //case "hi":
-        //return hiClues[index];
-      //default:
-        //return "none";
-    //}
-    //console.log(clue);
-    //return clue;
+    var index;
+    if(Math.random()>0.5){
+      index = 1;
+    }else{
+      index = 0;
+    }
+    switch (password){
+      case "cat":
+        return catClues[index];
+      case "light":
+        return lightClues[index];
+      case "hi":
+        return hiClues[index];
+      default:
+        return "none";
+    }
   }
 
   function star(){
@@ -92,13 +78,13 @@ $(document).ready(function() {
     return form
   }
 
-  //function createClueForm() {
-    //var clueElem = $('<div>', { id: "clueEntry"});
-    //var clueFormTitle = $("<h2>Enter a clue</h2>");
-    //var clueForm = createFormElement("clue");
-    //clueElem.append(clueFormTitle, clueForm);
-    //return clueElem;
-  //}
+  function createClueForm() {
+    var clueElem = $('<div>', { id: "clueEntry"});
+    var clueFormTitle = $("<h2>Enter a clue</h2>");
+    var clueForm = createFormElement("clue");
+    clueElem.append(clueFormTitle, clueForm);
+    return clueElem;
+  }
 
   function createWaitScreen() {
     console.log("in createWaitScreen()");
@@ -125,14 +111,12 @@ $(document).ready(function() {
   function createGuessForm() {
     $("#guessEntry").remove();
     var guessEntry = $('<div>', { id: "guessEntry"});
-    var clueText;
-    getClue(password,function(){
-        clueText = clue;
-    });
+    var clueText = getClue(password);
     var title1 = $("<h3>Password: "+star()+"</h3>");
     var clue = $("<h2>Clue: <font color = \"990000\">"+clueText+"</font></h2>");
     var title2 = $("<p>Type in a guess:</p>");
     var form = createFormElement("guessForm");
+    //$("input:text").focus();
     var giveUp = $("<button>Forfeit this password</button>", { type:"button", name:"giveUp"});
     giveUp.on("click",function(){
       var oldPass = password;
@@ -231,18 +215,6 @@ $(document).ready(function() {
     });
   }
 
-  function setLang(){
-    sourceLanguage = $("#sourceLanguage").val();
-    $("p:last").text("Playing in "+sourceLanguage);
-        //getPassword();
-    if(sourceLanguage!=""){
-       displayPlayScreen();
-    }else{
-       alert("Please enter a language!");
-    }
-    getPassword();
-  }
-
   $("#start button").on("click", displayLanguages);
   /*if enter key is pressed on the start screen, it is as though the start button
     has been pressed*/
@@ -253,7 +225,6 @@ $(document).ready(function() {
          $("#start button").focus().click();
        }else if($("input:text").is(":visible")){
          console.log("input text visible!");
-         //setLang();
          displayPlayScreen();
          //curScreen.submit();
          //$("#button[name=next]").focus().click();
@@ -272,14 +243,11 @@ $(document).ready(function() {
   });
 
   $("#languages button").on("mouseup", function(){
-    getPassword(function(){
-        console.log("entered getPassword's callback");
-        if(sourceLanguage!=""){
-           displayPlayScreen();
-        }else{
-           alert("Please enter a language!");
-        }
-    });
+    if(sourceLanguage!=""){
+       displayPlayScreen();
+    }else{
+       alert("Please enter a language!");
+    }
   });//displayPlayScreen);
   $("#container").on("click", "button[name=submit]", displayPlayScreen);
   $("#end:last-child").on("click", displayPlayScreen);
