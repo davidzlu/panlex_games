@@ -1,3 +1,5 @@
+// Based on https://github.com/Juriy/gamedev-demos/tree/master/rps/v2
+
 var sock = io();
 sock.on('msg', onMessage);
 
