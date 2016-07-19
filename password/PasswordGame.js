@@ -25,41 +25,77 @@ PasswordGame.prototype._initSockets = function() {
 	// Are all these listeners needed? All very similar
 	// Will need more verification of state in game to prevent cheating
     sock.on('password', function(pword) {
-	  self._verifyExpression(self._knowerLang, pword);
-	  // save pword for round
+	  var inPanLex = self._verifyExpression(self._knowerLang, pword);
+	  var followsRules = self._verifyPassword(pword);
+	  if (inPanLex && followsRules) {
+	    self._password = pword;
+		// send confirmation and ask for clue
+		// TODO: create event for transitioning from password to clue screens
+	  } else {
+	    // send error message, ask for another password
+	  }
     });
     sock.on('clue', function(clue) {
-      self._verifyExpression(self._knowerLang, clue);
-      // verify clue in panlex, and follows rules for clues
-	  // save clue
-	  // display all clues to both players
+      var inPanLex = self._verifyExpression(self._knowerLang, clue);
+	  var followsRules = self._verifyClue(clue);
+      if (inPanLex && followsRules) {
+	    self._clues.push(clue);
+		// send confirmation and array of clues, have knower wait and guesser start guessing
+	  } else {
+	    // send error message, ask for another clue
+	  }
     });
     sock.on('guess', function(guess) {
-      self._verifyExpression(self._guesserLang, guess);
-	  // save guess
-	  // display all guesses to both players
-	  // move to next round if guess correct, or 10th guess and wrong
+	  if (self._checkRoundEnd(guess)) {
+	    // finish round, change roles, points
+	  }
+      var inPanLex = self._verifyExpression(self._guesserLang, guess);
+	  var followsRules = self._verifyGuess(guess);
+	  if (inPanLex && followsRules) {
+	    self._guesses.push(guess);
+		// send confirmation and array of guesses
+		// have guesser wait, ask knower for clue
+	  } else {
+	    // send error message, ask for another guess
+	  }
     });
   }
 };
 
 PasswordGame.prototype._verifyExpression = function(lang, exp) {
   /* Checks if an expression 'exp' in language 'lang' is in PanLex. */
-  var goodExp = false;
-  var params = {};
-  var callback = function(err, data) {};
+  var inPanLex = false;
+  var params = {
+    uid: lang,
+	tt: exp,
+  };
+  var callback = function(err, data) {
+  	if (err) {
+	  console.log("Something went wrong with the query");
+	}
+	var result = data["result"][0];
+  };
   panlex.query('/ex', params, callback);
   // Check if exp in what query returns
-  return goodExp;
+  return inPanLex;
 };
 
-PasswordGame.prototype._verifyGuess = function(guess) {
+PasswordGame.prototype._verifyPassword = function(pword) {
 
 };
 
 PasswordGame.prototype._verifyClue = function(clue) {
 
 };
+
+PasswordGame.prototype._verifyGuess = function(guess) {
+
+};
+
+PasswordGame.prototype._checkRoundEnd = function(guess) {
+  return guess === self._password || self._guesses.length >= 10;
+};
+
 
 module.exports = PasswordGame;
 

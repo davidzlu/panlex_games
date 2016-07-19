@@ -27,6 +27,7 @@ function onConnection(sock) {
   */
   sock.emit('msg', 'Hello, You are playing Password!');
   sock.on('language', function(lang) {
+    // Currently assuming lang is uid of chosen language
     if (waitingPlayer) {
       new PasswordGame(waitingPlayer, waitingPlayerLang, sock, lang);
       waitingPlayer = null;
@@ -38,7 +39,5 @@ function onConnection(sock) {
       sock.emit('msg', 'Matching you with another player');
     }
   });
-
-
 }
 
