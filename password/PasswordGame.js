@@ -146,30 +146,28 @@ PasswordGame.prototype.initSockets = function() {
   }
 };
 
-
-
 PasswordGame.prototype.verifyPassword = function(pword) {
-
+  /* Checks if pword satisfies game rules for passwords. */
+  // check if proper noun somehow?
+  return (/^[a-z]+$/.test(pword)); // if pword has only lower case letters
 };
 
 PasswordGame.prototype.verifyClue = function(clue) {
-
+  /* Checks if clue satisfies game rules for clues. */
+  return /^[a-z]+$/.test(clue) && this.password.indexOf(clue) == -1 && this.clues.indexOf(clue) == -1;
 };
 
 PasswordGame.prototype.verifyGuess = function(guess) {
-
+  /* Checks if guess satisfies game rules for guesses. */
+  return this.guesses.indexOf(guess) == -1;
 };
 
 PasswordGame.prototype.checkRoundEnd = function(guess) {
   return guess === this.password || this.guesses.length >= 10;
 };
 
+PasswordGame.prototype.resetGame = function() {
+
+}
 
 module.exports = PasswordGame;
-
-
-
-
-
-
-
