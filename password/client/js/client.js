@@ -9,6 +9,8 @@ function onMessage(text) {
   $title.append($msg);
 }
 
+
+
 // TODO: should this data be all on server side? System design question
 var GameState = {
   sourceLanguage: '',
@@ -229,12 +231,14 @@ $(document).ready(function() {
   $("#start button").on("click", displayLanguages);
 
   /*collects GameState.sourceLanguage from user input and sets footer language message*/
-  $("#languages button").mousedown(function(){
+  $("#languages button").on("click", function(){
     GameState.sourceLanguage = $("#sourceLanguage").val();
     $("p:last").text("Playing in "+GameState.sourceLanguage);
+    sock.emit("language", GameState.sourceLanguage);
+    displayMatching();
   });
 
-  $("#languages button").on("mouseup", displayMatching);
+  //$("#languages button").on("click", );
   $("#container").on("click", "button[name=submit]", displayPlayScreen);
   $("#end:last-child").on("click", displayPlayScreen);
 });

@@ -3,7 +3,7 @@
 var http = require("http");
 var socketio = require("socket.io");
 var express = require("express");
-//var pg = require("./PasswordGame");
+var PasswordGame = require("./PasswordGame");
 
 var app = express();
 var server = http.createServer(app);

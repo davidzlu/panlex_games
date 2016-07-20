@@ -16,6 +16,22 @@ function PasswordGame(sock1, sock1Lang, sock2, sock2Lang) {
   this.initSockets();
 };
 
+PasswordGame.prototype.verifyPassword = function(pword) {
+  /* Checks if pword satisfies game rules for passwords. */
+  // check if proper noun somehow?
+  return (/^[a-z]+$/.test(pword)); // if pword has only lower case letters
+};
+
+PasswordGame.prototype.verifyClue = function(clue) {
+  /* Checks if clue satisfies game rules for clues. */
+  return /^[a-z]+$/.test(clue) && this.password.indexOf(clue) == -1 && this.clues.indexOf(clue) == -1;
+};
+
+PasswordGame.prototype.verifyGuess = function(guess) {
+  /* Checks if guess satisfies game rules for guesses. */
+  return this.guesses.indexOf(guess) == -1;
+};
+
 // TODO: onReceive___ functions can probably be simplified to one function
 PasswordGame.prototype.onReceivePassword = function(sock, pword) {
   /* Checks if password 'pword' from player 'sock' is valid. Passwords must
@@ -144,22 +160,6 @@ PasswordGame.prototype.initSockets = function() {
       self.onReceiveGuess(sock, guess);
     });
   }
-};
-
-PasswordGame.prototype.verifyPassword = function(pword) {
-  /* Checks if pword satisfies game rules for passwords. */
-  // check if proper noun somehow?
-  return (/^[a-z]+$/.test(pword)); // if pword has only lower case letters
-};
-
-PasswordGame.prototype.verifyClue = function(clue) {
-  /* Checks if clue satisfies game rules for clues. */
-  return /^[a-z]+$/.test(clue) && this.password.indexOf(clue) == -1 && this.clues.indexOf(clue) == -1;
-};
-
-PasswordGame.prototype.verifyGuess = function(guess) {
-  /* Checks if guess satisfies game rules for guesses. */
-  return this.guesses.indexOf(guess) == -1;
 };
 
 PasswordGame.prototype.checkRoundEnd = function(guess) {
