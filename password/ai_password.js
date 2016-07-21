@@ -79,18 +79,21 @@ $(document).ready(function() {
     $('button[name=submitButton]').on("click", getUserGuess());
     $(':text').focus();
     form.append(input, '<br><br>', submitButton);
-    return form
+    return form;
   }
 
   function forfeited(){
         first=true;
-        getPassword();
+        //getPassword();
         //var oldPass = password;
         //do{
           //password = passwords[Math.floor(Math.random()*3)];
         //}while(oldPass==password);
-        curScreen = $("#waiting");
-        displayGuess()
+        //curScreen = $("#feedback");
+        curScreen.fadeOut(function(){
+            curScreen = $("#feedback");
+            displayGuess();
+        });
   }
   function createWaitScreen() {
     console.log("in createWaitScreen()");
@@ -135,12 +138,24 @@ $(document).ready(function() {
   function createWinScreen() {
     console.log("in createWinScreen()");
     $("#winContainer").remove();
-    var winScreen = $("<div>",{id:"winContainer"});//, { id: "swapContainer"});
+    var winScreen = $("<div>",{id:"winContainer"});
     var message = $("<h2>Congratulations, you won!</h2><p>Thank you for playing.</p>");
     var againButton = $("<button>Play Again!</button>", { type:"button", name:"againButton"});
     winScreen.append(message, againButton);
     againButton.on("click", displayLanguages);
     return winScreen;
+  }
+
+  function createLoseScreen(){
+    console.log("in createLoseScreen()");
+    $("#loseContainer").remove();
+    var loseScreen = $("<div>",{id:"loseContainer"});
+    var message = $("<h2>The password was <font color=\"990000\">"+password+"</font>. Better luck next time!</h2>");
+    var thank = $("<h4>Thank you for playing.</h4>");
+    var againButton = $("<button>Play Again!</button>", { type:"button", name:"againButton"});
+    loseScreen.append(message, thank, againButton);
+    againButton.on("click", displayLanguages);
+    return loseScreen;
   }
 
   function displayLanguages() {
@@ -182,6 +197,11 @@ $(document).ready(function() {
             curScreen = $("#matching");
             displayGuess();
           }
+          break;
+        case "feedback":
+          curScreen = $("#lose")
+          console.log("in feedback case");
+          curScreen.append(createLoseScreen()).fadeIn();
           break;
         default:
           curScreen = $("#waiting");
