@@ -14,32 +14,38 @@ $(document).ready(function() {
   var clue;
   var first = true;
 
-  function getPassword(){
+  //function getPassword(){
     // Should retrieve password from server
-    var count=230000;
-    offset = Math.floor(count*Math.random()+20000);
-    console.log(offset);
-    var stop = false;
-    //var password;
-    panlex.query('/ex',{uid:'eng-000',offset:offset,limit:30},function(err,data){
-	data.result.forEach(function (ex) {
-            var wrd = ex.tt;
-            if(wrd.indexOf(" ")==-1 && wrd.indexOf("\'"==-1)&&stop==false&&wrd.length<8){
-              if((new RegExp('[A-Z]')).test(wrd)==false){
-                console.log("just approved: "+wrd);                        
-                if(stop==false){
-                    password = wrd;
-                    password_id = ex.ex;
-                    console.log("final password: "+password);
-                    stop=true;
-                    console.log("stop set to "+stop);
-                    first=true;
-                    displayPlayScreen();
-                }
+    //var count=230000;
+    //offset = Math.floor(count*Math.random()+20000);
+    //console.log(offset);
+    //var stop = false;
+    //queryPassword();
+  //}
+
+  function getPassword(){
+      console.log("while loop entered");
+      panlex.query('/ex',{uid:'eng-000',offset:offset,limit:1},function(err,data){
+          data.result.forEach(function (ex) {
+              var wrd = ex.tt;
+              console.log(offset+": "+wrd);
+              if(wrd.indexOf(" ")==-1 && wrd.indexOf("\'"==-1)&&wrd.length<10 && (new RegExp('[A-Z]')).test(wrd)==false){
+                      console.log("just approved: "+wrd);
+                      password = wrd;
+                      password_id = ex.ex;
+                      console.log("final password: "+password);
+                      stop=true;
+                      console.log("stop set to "+stop);
+                      first=true;
+                      createGuessForm(true);
+              }else{
+                  console.log("doesn't meet criteria");
+                  offset = (offset + 1000)%249000;                     
+                  //console.log("about to call queryPassword()");
+                  getPassword();
               }
-            }
-        });
-    });
+          });
+      });
   }
 
   function getClue() {
@@ -61,9 +67,14 @@ $(document).ready(function() {
 
   function star(){
     var starized = "";
-    starized = starized + password[0];
-    for(var i = 1; i < password.length; i++){
-      starized = starized + "*";
+    console.log("trying to starize "+password);
+    if(password!=null){
+        starized = starized + password[0];
+        for(var i = 1; i < password.length; i++){
+          starized = starized + "*";
+        }
+    }else{
+        starized="loading...";
     }
     return starized;
   }
@@ -83,17 +94,11 @@ $(document).ready(function() {
   }
 
   function forfeited(){
-        first=true;
-        //getPassword();
-        //var oldPass = password;
-        //do{
-          //password = passwords[Math.floor(Math.random()*3)];
-        //}while(oldPass==password);
-        //curScreen = $("#feedback");
-        curScreen.fadeOut(function(){
-            curScreen = $("#feedback");
-            displayGuess();
-        });
+      first=true;
+      curScreen.fadeOut(function(){
+          curScreen = $("#feedback");
+          displayGuess();
+      });
   }
   function createWaitScreen() {
     console.log("in createWaitScreen()");
@@ -110,34 +115,57 @@ $(document).ready(function() {
     return waitScreen;
   }
 
-  function createGuessForm() {
+  function createGuessForm(isCallback) {
     console.log("in createGuessForm()");
-    $("#guessEntry").remove();
-    var guessEntry = $('<div>', { id: "guessEntry"});
+    //$("#guessEntry").remove();
+     $("winContainer").remove();
+    //var guessEntry = $('<div>', { id: "guessEntry"});
+    var passText;
     var clueText;
     console.log("about to call getClue with first="+first);
-    if(first){
-        getClue(function(){
-            console.log(clue);
-            clueText = clue;
-        });
+    //if(first){
+        if(!isCallback){
+            $("winContainer").remove();
+            $("#guessEntry").remove();
+            var guessEntry = $('<div>', { id: "guessEntry"});
+            //These 4 lines necessary prep for calling getPassword()
+            var count=230000;
+            offset = Math.floor(count*Math.random()+20000);
+            console.log(offset);
+            var stop = false;
+            getPassword();//function(){
+            //passText = password;
+            console.log("after calling getPassword");
+        }else{
+            $("#passText").html("<h2>Password: "+star()+"</h2>");
+            first=true;      
+            getClue(function(){
+                //$("h3").html("<h3>Clue: <font color = \"990000\">"+clue+"</font></h3>");
+                console.log(clue);
+                clueText = clue;
+            });
+        }
+        passText =  $("<h2>Password: "+star()+"</h2>");
         clueText = $("<h3>Clue: <font color = \"990000\">loading...</font></h3>");
-    }else{
-        clueText= $("<h3>Clue: <font color = \"990000\">"+clue+"</font></h3>");
-
-    }
-    var title1 = $("<h2>Password: "+star()+"</h2>");
+    //}else{
+      //  passText = $("<h2>Password: "+star()+"</h2>");
+        //clueText= $("<h3>Clue: <font color = \"990000\">"+clue+"</font></h3>");
+    //}
     var title2 = $("<p>Type in a guess:</p>");
     var form = createFormElement("guessForm");
     var giveUp = $("<button>Forfeit this password</button>", { type:"button", name:"giveUp"});
     giveUp.on("click",forfeited);
-    guessEntry.append(title1, clueText, title2, form, giveUp);
+    console.log("title2 is null: "+(title2==null)+"form is null: "+(form==null)+"giveup is null: "+(giveUp==null));
+    console.log("passText is null: "+(passText==null)+", clueText is null: "+(clueText==null));
+    console.log("passText: "+JSON.stringify(passText)+", clueText: "+JSON.stringify(clueText));
+    guessEntry.append(passText, clueText, title2, form, giveUp);
     return guessEntry;
   }
 
   function createWinScreen() {
     console.log("in createWinScreen()");
-    $("#winContainer").remove();
+    $("#guessContainer").remove();
+    $("#guessEntry").remove();
     var winScreen = $("<div>",{id:"winContainer"});
     var message = $("<h2>Congratulations, you won!</h2><p>Thank you for playing.</p>");
     var againButton = $("<button>Play Again!</button>", { type:"button", name:"againButton"});
@@ -169,7 +197,9 @@ $(document).ready(function() {
 
   function getUserGuess(){ 
     console.log("trying to set guess from user input");
-    guess = input.val();//$("#inputName").val();
+    //guess = guessForm.val();//
+    guess = $("#guessEntry").children().last().prev().children().first().val();
+    console.log("guess: "+guess);
   }
 
 
@@ -182,8 +212,9 @@ $(document).ready(function() {
           break;
         case "waiting":
           curScreen = $("#guess");
+          $("guesserContainer").remove();
           console.log("about to creatGuessForm()");
-          curScreen.append(createGuessForm()).fadeIn();
+          curScreen.append(createGuessForm(false)).fadeIn();
           $("input:text:visible:first").focus();
           break;
         case "guess":        
@@ -191,7 +222,8 @@ $(document).ready(function() {
           $('button[name=submitButton]').on("click", getUserGuess());
           console.log("after: "+guess);
           if (guess == password) {
-            curScreen = $("#win");         
+            curScreen = $("#win");
+            console.log("WIN! calling createWinScreen");         
             curScreen.append(createWinScreen()).fadeIn();
           } else {
             curScreen = $("#matching");
@@ -211,20 +243,11 @@ $(document).ready(function() {
     });
   }
 
-  function displayPlayScreen() {
-    // Manages selection b/t displayPassword and displayGuess
-    if (role == "password") {
-      displayPassword();
-    } else if (role == "guess") {
-      displayGuess();
-    }
-  }
-
   function displayMatching() {
     curScreen.fadeOut(function() {
       curScreen = $("#matching");
       curScreen.append('<p>Matching...</p>');
-      $('p').on("click", displayPlayScreen);
+      $('p').on("click", displayGuess);
       curScreen.fadeIn();
     });
   }
@@ -243,7 +266,7 @@ $(document).ready(function() {
     $("p:last").text("Playing in "+sourceLanguage);
         //getPassword();
     if(sourceLanguage!=""){
-       displayPlayScreen();
+       displayGuess();
     }else{
        alert("Please enter a language!");
     }
@@ -261,7 +284,7 @@ $(document).ready(function() {
        }else if($("input:text").is(":visible")){
          console.log("input text visible!");
          //setLang();
-         displayPlayScreen();
+         displayGuess();
          //curScreen.submit();
          //$("#button[name=next]").focus().click();
        }else{
@@ -280,15 +303,30 @@ message*/
   });
 
   $("#languages button").on("mouseup", function(){
-    getPassword(function(){
-        console.log("entered getPassword's callback");
-        if(sourceLanguage!=""){
-           displayPlayScreen();
-        }else{
-           alert("Please enter a language!");
-        }
-    });
-  });//displayPlayScreen);
-  $("#container").on("click", "button[name=submit]", displayPlayScreen);
-  $("#end:last-child").on("click", displayPlayScreen);
+    //getPassword(function(){
+        //console.log("entered getPassword's callback");
+        //$("h2").text("Password: "+password);
+        //if(sourceLanguage!=""){
+           //displayGuess();
+        //}else{
+           //alert("Please enter a language!");
+        //}
+    //});
+    if(sourceLanguage!=""){
+        displayGuess();
+    }else{
+        alert("Please enter a language!");
+    }
+
+           //$("#languages button").on("mousedown",function(){
+               //console.log("in new mousedown callback");
+               //curscreen.append("<p>Loading...</p>");
+           //});
+           //$("#languages button").on("mouseup",function(){ 
+               //console.log("in new mouseup callback");
+               //curscreen.append("<p>Loading...</p>");
+           //});
+  });
+  $("#container").on("click", "button[name=submit]", displayGuess);
+  $("#end:last-child").on("click", displayGuess);
 });
