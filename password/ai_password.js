@@ -81,6 +81,8 @@ $(document).ready(function() {
   }
 
   function forfeited(){
+  /*callback that is executed after user clicks the forfeit button from
+    the guessEntry or wait screen*/
       first=true;
       curScreen.fadeOut(function(){
           curScreen = $("#feedback");
@@ -88,6 +90,7 @@ $(document).ready(function() {
       });
   }
   function createWaitScreen() {
+  /*creates screen to be displayed when user submits incorrect guess*/
     console.log("in createWaitScreen()");
     $("#wait").remove();
     var waitScreen = $('<div>', { id: "wait"});
@@ -103,10 +106,10 @@ $(document).ready(function() {
   }
 
   function createGuessForm(isCallback) {
+  /*creates and returns guessEntry object (for displaying clues and 
+    asking for user's guesses)*/
     console.log("in createGuessForm()");
-    //$("#guessEntry").remove();
-     $("winContainer").remove();
-    //var guessEntry = $('<div>', { id: "guessEntry"});
+    $("winContainer").remove();
     var passText;
     var clueText;
     console.log("about to call getClue with first="+first);
@@ -121,7 +124,6 @@ $(document).ready(function() {
                 console.log(offset);
                 var stop = false;
                 getPassword();//function(){
-                //passText = password;
                 console.log("after calling getPassword");
                 passText =  $("<h2>Password: loading...</h2>");
                 clueText = $("<h3>Clue: <font color = \"990000\">loading...</font></h3>");
@@ -134,27 +136,23 @@ $(document).ready(function() {
                  $("h2").html("Password: "+star());
                 first=true;      
                 getClue(function(){
-                    //$("h3").html("<h3>Clue: <font color = \"990000\">"+clue+"</font></h3>");
                     console.log(clue);
                     clueText = clue;
                 });
             }
         }
-        //passText =  $("<h2>Password: "+star()+"</h2>");
-        //clueText = $("<h3>Clue: <font color = \"990000\">loading...</font></h3>");
     var title2 = $("<p>Type in a guess:</p>");
     var form = createFormElement("guessForm");
     var giveUp = $("<button>Forfeit this password</button>", { type:"button", name:"giveUp"});
     giveUp.on("click",forfeited);
-    //console.log("title2 is null: "+(title2==null)+"form is null: "+(form==null)+"giveup is null: "+(giveUp==null));
-    //console.log("passText is null: "+(passText==null)+", clueText is null: "+(clueText==null));
-    //console.log("passText: "+JSON.stringify(passText)+", clueText: "+JSON.stringify(clueText));
     guessEntry.append(passText, clueText, title2, form, giveUp);
     return guessEntry;
   }
 
   function createWinScreen() {
+  /*composes winScreen object (to be displayed if user guesses password correctly)*/
     console.log("in createWinScreen()");
+    $("#winContainer").remove();
     $("#guessContainer").remove();
     $("#guessEntry").remove();
     var winScreen = $("<div>",{id:"winContainer"});
@@ -166,6 +164,7 @@ $(document).ready(function() {
   }
 
   function createLoseScreen(){
+  /*composes loseScreen object (to be displayed if user forfeits password)*/
     console.log("in createLoseScreen()");
     $("#loseContainer").remove();
     var loseScreen = $("<div>",{id:"loseContainer"});
@@ -187,15 +186,15 @@ $(document).ready(function() {
     });
   }
 
-  function getUserGuess(){ 
+  function getUserGuess(){
+  /*gather input for user guesses*/ 
     console.log("trying to set guess from user input");
-    //guess = guessForm.val();//
     guess = $("#guessEntry").children().last().prev().children().first().val();
     console.log("guess: "+guess);
   }
 
-
   function displayGuess() {
+  /*Main function for managing the html contents of the page*/
     curScreen.fadeOut(function() {
       switch (curScreen.attr("id")) {
         case "matching":
@@ -235,15 +234,6 @@ $(document).ready(function() {
     });
   }
 
-  function displayMatching() {
-    curScreen.fadeOut(function() {
-      curScreen = $("#matching");
-      curScreen.append('<p>Matching...</p>');
-      $('p').on("click", displayGuess);
-      curScreen.fadeIn();
-    });
-  }
-
   function displayEnd() {
     /* Handles transition from translation data input to end screen. */
     curScreen.fadeOut(function() {
@@ -251,18 +241,6 @@ $(document).ready(function() {
       curScreen = $("#end");
       curScreen.fadeIn();
     });
-  }
-
-  function setLang(){
-    sourceLanguage = $("#sourceLanguage").val();
-    $("p:last").text("Playing in "+sourceLanguage);
-        //getPassword();
-    if(sourceLanguage!=""){
-       displayGuess();
-    }else{
-       alert("Please enter a language!");
-    }
-    //getPassword();
   }
 
   $("#start button").on("click", displayLanguages);
@@ -275,7 +253,6 @@ $(document).ready(function() {
          $("#start button").focus().click();
        }else if($("input:text").is(":visible")){
          console.log("input text visible!");
-         //setLang();
          displayGuess();
          //curScreen.submit();
          //$("#button[name=next]").focus().click();
@@ -295,29 +272,11 @@ message*/
   });
 
   $("#languages button").on("mouseup", function(){
-    //getPassword(function(){
-        //console.log("entered getPassword's callback");
-        //$("h2").text("Password: "+password);
-        //if(sourceLanguage!=""){
-           //displayGuess();
-        //}else{
-           //alert("Please enter a language!");
-        //}
-    //});
     if(sourceLanguage!=""){
         displayGuess();
     }else{
         alert("Please enter a language!");
     }
-
-           //$("#languages button").on("mousedown",function(){
-               //console.log("in new mousedown callback");
-               //curscreen.append("<p>Loading...</p>");
-           //});
-           //$("#languages button").on("mouseup",function(){ 
-               //console.log("in new mouseup callback");
-               //curscreen.append("<p>Loading...</p>");
-           //});
   });
   $("#container").on("click", "button[name=submit]", displayGuess);
   $("#end:last-child").on("click", displayGuess);
