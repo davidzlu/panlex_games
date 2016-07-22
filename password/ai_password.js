@@ -3,25 +3,12 @@ $(document).ready(function() {
   var sourceLanguage = "default language"; // Assigned by user input
   var curScreen = $("#start");
   var role = "guess";
-  var passwords = ["cat","light","hi"];
   var password;
   var password_id;
-  var catClues = ["feline","whiskers"];
-  var lightClues = ["bright","day"];
-  var hiClues = ["greeting","wave"]
   var guess = "default guess";
   var input;
   var clue;
   var first = true;
-
-  //function getPassword(){
-    // Should retrieve password from server
-    //var count=230000;
-    //offset = Math.floor(count*Math.random()+20000);
-    //console.log(offset);
-    //var stop = false;
-    //queryPassword();
-  //}
 
   function getPassword(){
       console.log("while loop entered");
@@ -123,41 +110,45 @@ $(document).ready(function() {
     var passText;
     var clueText;
     console.log("about to call getClue with first="+first);
-    //if(first){
         if(!isCallback){
             $("winContainer").remove();
             $("#guessEntry").remove();
             var guessEntry = $('<div>', { id: "guessEntry"});
-            //These 4 lines necessary prep for calling getPassword()
-            var count=230000;
-            offset = Math.floor(count*Math.random()+20000);
-            console.log(offset);
-            var stop = false;
-            getPassword();//function(){
-            //passText = password;
-            console.log("after calling getPassword");
+            if(first){
+                //These 4 lines necessary prep for calling getPassword()
+                var count=230000;
+                offset = Math.floor(count*Math.random()+20000);
+                console.log(offset);
+                var stop = false;
+                getPassword();//function(){
+                //passText = password;
+                console.log("after calling getPassword");
+                passText =  $("<h2>Password: loading...</h2>");
+                clueText = $("<h3>Clue: <font color = \"990000\">loading...</font></h3>");
+            }else{
+                passText =  $("<h2>Password: "+star()+"</h2>");
+                clueText = $("<h3>Clue: <font color = \"990000\">"+clue+"</font></h3>");
+            }
         }else{
-            $("#passText").html("<h2>Password: "+star()+"</h2>");
-            first=true;      
-            getClue(function(){
-                //$("h3").html("<h3>Clue: <font color = \"990000\">"+clue+"</font></h3>");
-                console.log(clue);
-                clueText = clue;
-            });
+            if(first){
+                 $("h2").html("Password: "+star());
+                first=true;      
+                getClue(function(){
+                    //$("h3").html("<h3>Clue: <font color = \"990000\">"+clue+"</font></h3>");
+                    console.log(clue);
+                    clueText = clue;
+                });
+            }
         }
-        passText =  $("<h2>Password: "+star()+"</h2>");
-        clueText = $("<h3>Clue: <font color = \"990000\">loading...</font></h3>");
-    //}else{
-      //  passText = $("<h2>Password: "+star()+"</h2>");
-        //clueText= $("<h3>Clue: <font color = \"990000\">"+clue+"</font></h3>");
-    //}
+        //passText =  $("<h2>Password: "+star()+"</h2>");
+        //clueText = $("<h3>Clue: <font color = \"990000\">loading...</font></h3>");
     var title2 = $("<p>Type in a guess:</p>");
     var form = createFormElement("guessForm");
     var giveUp = $("<button>Forfeit this password</button>", { type:"button", name:"giveUp"});
     giveUp.on("click",forfeited);
-    console.log("title2 is null: "+(title2==null)+"form is null: "+(form==null)+"giveup is null: "+(giveUp==null));
-    console.log("passText is null: "+(passText==null)+", clueText is null: "+(clueText==null));
-    console.log("passText: "+JSON.stringify(passText)+", clueText: "+JSON.stringify(clueText));
+    //console.log("title2 is null: "+(title2==null)+"form is null: "+(form==null)+"giveup is null: "+(giveUp==null));
+    //console.log("passText is null: "+(passText==null)+", clueText is null: "+(clueText==null));
+    //console.log("passText: "+JSON.stringify(passText)+", clueText: "+JSON.stringify(clueText));
     guessEntry.append(passText, clueText, title2, form, giveUp);
     return guessEntry;
   }
@@ -189,6 +180,7 @@ $(document).ready(function() {
   function displayLanguages() {
     /* Handles transition from start screen to language input screen. */
     curScreen.fadeOut(function() {
+      first=true;
       curScreen = $("#languages");
       curScreen.fadeIn();
       $("input:text:visible:first").focus();
@@ -270,7 +262,7 @@ $(document).ready(function() {
     }else{
        alert("Please enter a language!");
     }
-    getPassword();
+    //getPassword();
   }
 
   $("#start button").on("click", displayLanguages);
