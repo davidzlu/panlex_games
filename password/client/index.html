@@ -12,29 +12,23 @@
         <h1>The Password Game</h1>
         <h4>Powered by PanLex</h4>
       </div><br/>
-      <div class="screen" id="start">
+      <div class="screen" id="startContainer">
         <h1>Password</h1>
         <button name="start">Start</button>
       </div>
-      <div class="screen" id="languages" style="display: none;">
+      <div class="screen" id="languagesContainer" style="display: none;">
         <form name="languageSelect" action="">
           Language to use: <input type="text" id="sourceLanguage"><br/>
           <button type="button">Next</button>
         </form>
       </div>
-      <div class="screen" id="matching"></div>
-      <div class="screen" id="translate"></div>
-      <div class="screen" id="passwordContainer">
-        <div id="password"></div>
-        <div id="clue"></div>
-      </div>
-      <div class="screen" id="guesserContainer">
-        <div id="guess"></div>
-        Clues:<br/><ol id="clueList"></ol>
-      </div>
-      <div class="screen" id="waiting"></div>
-      <div class="screen" id="swap" style="display: none;"></div>
-      <div class="screen" id="win" style="display: none;"></div>
+      <div class="screen" id="matchingContainer"></div>
+      <div class="screen" id="passwordContainer"></div>
+      <div class="screen" id="clueContainer"></div>
+      <div class="screen" id="guessContainer"></div>
+      <div class="screen" id="waitContainer"></div>
+      <div class="screen" id="swapContainer"></div>
+      <div class="screen" id="winContainer"></div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>

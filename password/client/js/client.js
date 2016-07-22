@@ -1,71 +1,130 @@
 // Based on https://github.com/Juriy/gamedev-demos/tree/master/rps/v2
 
 var sock = io();
-sock.on('msg', onMessage);
+sock.on("msg", onMessage);
+sock.on("passwordSuccess", onPasswordSuccess);
+sock.on("passwordFail", onPasswordFail);
+sock.on("clueSuccess", onClueSuccess);
+sock.on("clueFail", onClueFail);
+sock.on("guessSuccess", onGuessSuccess);
+sock.on("guessFail", onGuessFail);
 
 function onMessage(text) {
-  var $title = $("#title");
-  var $msg = $("<h2>" + text + "</h2>");
-  $title.append($msg);
+  /* Function for displaying messages in title. For debugging purposes.
+   * Don"t keep in final game. Or at least modify heavily. */
+  var title = $("#title");
+  var msg = $("<h2>" + text + "</h2>");
+  title.append(msg);
 }
 
+function onPasswordSuccess(data) {
+  /* This function:
+   *   1) displays confirmation message from server.
+   *   2) sets the password for the round
+   *   3) empties the passwordContainer div of all elements
+   *   4) transitions to clue screen */
+  var msg = data["msg"];
+  GameState.password = data["password"];
+  onMessage(msg);
+  $("#passwordContainer").empty();
+  GameState.curScreen = $("#clueContainer");
+  GameState.curScreen.append(createClueElement()).fadeIn();
+}
 
+function onPasswordFail(data) {
+  /* This function:
+   *   1) displays the error message from server
+   *   2) transitions to password screen*/
+  var msg = data["msg"];
+  onMessage(msg);
+  GameState.fadeIn();
+}
 
-// TODO: should this data be all on server side? System design question
+function onClueSuccess(data) {
+  /* For the knower, this function:
+   *   1) displays confirmation message from server
+   *   2) empties clueContainer div of all elements
+   *   3) transitions to wait screen 
+   * For the guesser, this function:
+   *   1) displays confirmation message from server
+   *   2) transitions from wait screen to guess screen */
+}
+
+function onClueFail(data) {
+  /* This function:
+   *   1) displays error message from server
+   *   2) transitions to clue screen */
+
+}
+
+function onGuessSuccess(data) {
+  /* Called when guess sent, but does not match password and less than 10 guesses sent.
+   * For the guesser, this function:
+   *   1) displays confirmation from server
+   *   2) empties guessContainer div of all elements
+   *   3) transitions to wait screen 
+   * For the knower, this function:
+   *   1) displays confirmation from server
+   *   2) transitions from wait to clue screen */
+
+}
+
+function onGuessFail(data) {
+  /* This function:
+   *   1) displays error message from server
+   *   2) transitions to guess screen */
+
+}
+
+// TODO: how to keep these variables around? Is this the most sensible way?
 var GameState = {
-  sourceLanguage: '',
+  sourceLanguage: "",
   curScreen: null,
-  role: 'password',
-  password: '', // We won't want this field when game is finished
-  guess: '',
+  role: "password",
+  password: "",
+  guess: "",
   clues: [],
 }
 
 $(document).ready(function() {
   
-  GameState.curScreen = $("#start");
+  GameState.curScreen = $("#startContainer");
 
-  function getGuess() {
-    // Should retrieve guess from server
-    return GameState.guess;
-  }
-
-  function getClue() {
-    // Should retrieve clue from server
-    return "none";
-  }
-
-  function createFormElement(inputName, formAction="") {
-    /* Helper function for createQuestionElement. Creates an HTML form
-       element that accepts text input. */
-    var form = $('<form>', { name: "userInput",
-      action: formAction,
-      method: "post"});
-    var input = $('<input>', {type: "text", name: inputName});
-    var submitButton = $('<button type="button" name="submit">Submit</button>');
-    form.append(input, '<br/>', submitButton);
-    return form
-  }
-
-  function createPasswordForm() {
-    var passElem = $("<div>", { id: "passEntry"});
+  /* createXXXElement functions create a div that will contain all
+   * necesseary parts of a screen. These divs will be in another div
+   * with the name of XXXContainer. */
+  function createPasswordElement() {
+    var passElem = $("<div>", { id: "passElem"});
     var passFormTitle = $("<h2>Enter a password</h2>");
-    var passForm = createFormElement("password");
+    var passForm = _createFormElement("password", "passwordSubmit");
     passElem.append(passFormTitle, passForm);
     return passElem;
   }
 
-  function createClueForm() {
-    var clueElem = $('<div>', { id: "clueEntry"});
+  function createClueElement() {
+    var clueElem = $("<div>", { id: "clueElem"});
     var clueFormTitle = $("<h2>Enter a clue</h2>");
-    var clueForm = createFormElement("clue");
-    clueElem.append(clueFormTitle, clueForm);
+    var clueForm = _createFormElement("clue", "clueSubmit");
+    var clueList = _createClueList();
+    var endButton = _createEndButton();
+    
+    clueElem.append(clueFormTitle, clueList, clueForm, endButton);
     return clueElem;
   }
 
+  function createGuessElement() {
+    var guessElem = $("<div>", { id: "guessElem"});
+    var title = $("<h2>Type in a guess</h2>");
+    var clueList = _createClueList();
+    var form = _createFormElement("guess", "guessSubmit");
+    var endButton = _createEndButton();
+
+    guessElem.append(title, clueList, form, endButton);
+    return guessElem;
+  }
+
   function createWaitScreen() {
-    $("#wait").remove();
-    var waitScreen = $('<div>', { id: "wait"});
+    var waitScreen = $("<div>", { id: "wait"});
     var message, callback;
     if (GameState.role == "password") {
       message = $("<p>Waiting for guess...</p>");
@@ -77,16 +136,6 @@ $(document).ready(function() {
     waitScreen.append(message);
     message.on("click", callback);
     return waitScreen;
-  }
-
-  function createGuessForm() {
-    $("#guessEntry").remove();
-    var guessEntry = $('<div>', { id: "guessEntry"});
-    var title = $("<h2>Type in a guess</h2>");
-    var clue = $("<p>Clue: " + getClue() + "</p>");
-    var form = createFormElement("guessForm");
-    guessEntry.append(title, clue, form);
-    return guessEntry;
   }
 
   function createSwapScreen() {
@@ -104,32 +153,52 @@ $(document).ready(function() {
     return swapScreen;
   }
 
+  function _createFormElement(inputName, socketEvent) {
+    /* Creates an HTML form element that accepts text input.
+     * inputName: name of input element
+     * socketEvent: the event to emit upon submission */
+    var form = $("form");
+    var input = $("<input>", {type: "text", name: inputName});
+    var submitButton = $("<button>", {type: "button", name:"submit", value:"Submit"});
+    form.append(input, "<br/>", submitButton);
+    $("#container").on("click", "button[name=submit]", function() {
+      sock.emit(socketEvent, $("input[name="+inputName+"]").val());
+      GameState.curScreen.fadeOut(); // to avoid multiple submissions at once?
+    });
+    return form
+  }
+
+  function _createClueList() {
+    var clueList = $("<ol>", {id: "clueList"});
+    for (var i=0; i<GameState.clues.length; i++) {
+      var clueItem = $("<li>"+GameState.clues[i]+"</li>");
+      clueList.append(clueItem);
+    }
+    return clueList;
+  }
+
+  function _createEndButton() {
+    // endButton should be used for debugging purposes, currently no intention to keep
+    var endButton = $("<button>", {type:"button", name:"endButton", value:"End Round"});
+    $("button[name=endButton]").on("click", function() {
+      if (GameState.guess == GameState.password) {
+        //do something really obvious
+      }
+      displayPassword();  
+    });
+  }
+
   // TODO: Refactor this function
   function displayPassword() {
     GameState.curScreen.fadeOut(function() {
       switch (GameState.curScreen.attr("id")) {
         case "matching":
-          GameState.curScreen = $("#password");
+          GameState.curScreen = $("#passwordContainer");
           GameState.curScreen.append(createPasswordForm()).fadeIn();
-          break;
-        case "password":
-          if (GameState.password == null) {
-            GameState.password = $('form[name=userInput] input')[0].value;
-          }
-          GameState.curScreen = $("#clue");
-          $('#password').empty();
-          var endButton = $('<button type="button" name="endButton">End Round</button>');
-          GameState.curScreen.append(createClueForm(), endButton).fadeIn();
-          $('button[name=endButton]').on("click", function() {
-            if(GameState.guess = GameState.password){
-               //do something really obvious
-            }
-            displayPassword();
-          });
           break;
         case "clue":
           GameState.curScreen = $("#waiting");
-          $('#clue').empty();
+          $("#clueContainer").empty();
           GameState.curScreen.append(createWaitScreen(), endButton).fadeIn();
           break;
         case "waiting":
@@ -137,12 +206,12 @@ $(document).ready(function() {
             GameState.curScreen = $("#swap");
             GameState.curScreen.append(createSwapScreen()).fadeIn();
           } else {
-            GameState.curScreen = $("#password");
+            GameState.curScreen = $("#passwordContainer");
             displayPassword();
           }
           break;
         default:
-          GameState.curScreen = $("#matching");
+          GameState.curScreen = $("#matchingContainer");
           GameState.guess = "hello"
           displayPassword();
       }
@@ -152,12 +221,12 @@ $(document).ready(function() {
   function displayLanguages() {
     /* Handles transition from start screen to language input screen. */
     GameState.curScreen.fadeOut(function() {
-      GameState.curScreen = $("#languages");
+      GameState.curScreen = $("#languagesContainer");
       GameState.curScreen.fadeIn();
     });
   }
 
-  function setSourceLanguage(){
+  function setSourceLanguage() {
     //
   }
 
@@ -171,11 +240,11 @@ $(document).ready(function() {
           //GameState.curScreen.append("Playing in "+GameState.sourceLanguage);
           break;
         case "waiting":
-          GameState.curScreen = $("#guess");
+          GameState.curScreen = $("#guessContainer");
           $("button[name=endButton]").remove();
-          var endButton = $('<button type="button" name="endButton">End Round</button>');
+          var endButton = $("<button type="button" name="endButton">End Round</button>");
           GameState.curScreen.append(createGuessForm(), endButton).fadeIn();
-          $('button[name=endButton]').on("click", function() {
+          $("button[name=endButton]").on("click", function() {
             GameState.guess = GameState.password;
             displayGuess();
           });
@@ -186,12 +255,12 @@ $(document).ready(function() {
             GameState.curScreen.append(createSwapScreen()).fadeIn();
 
           } else {
-            GameState.curScreen = $("#matching");
+            GameState.curScreen = $("#matchingContainer");
             displayGuess();
           }
           break;
         default:
-          GameState.curScreen = $("#matching");
+          GameState.curScreen = $("#matchingContainer");
           GameState.guess = "hello"
           displayGuess();
       }
@@ -209,10 +278,10 @@ $(document).ready(function() {
 
   function displayMatching() {
     GameState.curScreen.fadeOut(function() {
-      GameState.curScreen = $("#matching");
-      GameState.curScreen.append('<p>Matching...</p>');//<p>Playing in '+GameState.sourceLanguage+'</p>');
+      GameState.curScreen = $("#matchingContainer");
+      GameState.curScreen.append("<p>Matching...</p>");//<p>Playing in "+GameState.sourceLanguage+"</p>");
       //GameState.curScreen.append("Playing in "+GameState.sourceLanguage);
-      $('p').on("click", displayPlayScreen);
+      $("p").on("click", displayPlayScreen);
       GameState.curScreen.fadeIn();
     });
   }
@@ -226,19 +295,16 @@ $(document).ready(function() {
     });
   }
 
-
   // Event listeners below
-  $("#start button").on("click", displayLanguages);
+  $("#startContainer button").on("click", displayLanguages);
 
   /*collects GameState.sourceLanguage from user input and sets footer language message*/
-  $("#languages button").on("click", function(){
+  $("#languagesContainer button").on("click", function(){
     GameState.sourceLanguage = $("#sourceLanguage").val();
     $("p:last").text("Playing in "+GameState.sourceLanguage);
     sock.emit("language", GameState.sourceLanguage);
     displayMatching();
   });
-
-  //$("#languages button").on("click", );
-  $("#container").on("click", "button[name=submit]", displayPlayScreen);
+  
   $("#end:last-child").on("click", displayPlayScreen);
 });
