@@ -36,7 +36,6 @@ function onSetPassword() {
 
 }
 
-// TODO: onReceive___ functions can probably be simplified to one function
 PasswordGame.prototype.onReceivePassword = function(sock, pword) {
   /* Checks if password 'pword' from player 'sock' is valid. Passwords must
    * follow the rules for passwords, and be in PanLex. */
@@ -44,32 +43,30 @@ PasswordGame.prototype.onReceivePassword = function(sock, pword) {
   function checkPasswordInPanlex(err, data) {
     /* Callback function for panlex.query. Checks if pword was returned
      * from PanLex query, and acts accordingly. */
-   	if (err) {
-	  console.log("Something went wrong with the query");
-	}
+    if (err) {
+      console.log("Something went wrong with the query");
+    }
 
-	var result = data["result"][0];   
-	if (result["tt"] == pword) {
-	  this.password = pword;
-	  // passwordSuccess event sends confirmation message. Client side will change screens
-	  // and display message
-	  sock.emit('passwordSuccess', 'Your password has been set. Please enter a clue');
-	} else {
-	  // passwordFail sends failure message. Client side stays on same screen.
-	  socket.emit('passwordFail', pword + " was not found in PanLex. Please submit another.");
-	}
+    var result = data["result"][0];   
+    if (result["tt"] == pword) {
+      this.password = pword;
+      // alert guesser now waiting for clue?
+      sock.emit('passwordSuccess', {"msg": "Your password has been set. Please enter a clue", "password": pword});
+    } else {
+      socket.emit('passwordFail', {"msg": pword + " was not found in PanLex. Please submit another."});
+    }
   }
 
   var followsRules = this.verifyPassword(pword);
   var params = {
-    uid: this.knowerLang,
-    tt: pword,
+    "uid": this.knowerLang,
+    "tt": pword,
   };
  
   if (followsRules) {
     panlex.query('/ex', params, checkPasswordInPanlex); 
   } else {
-    socket.emit('passwordFail', pword + " does not follow rules for a password. Please submit another.");
+    socket.emit('passwordFail', {"msg": pword + " does not follow rules for a password. Please submit another."});
   }
 };
 
@@ -80,32 +77,32 @@ PasswordGame.prototype.onReceiveClue = function(sock, clue) {
   function checkClueInPanlex(err, data) {
     /* Callback function for panlex.query. Checks if clue was returned
      * from PanLex query, and acts accordingly. */
-   	if (err) {
-	    console.log("Something went wrong with the query");
-	  }
+    if (err) {
+      console.log("Something went wrong with the query");
+    }
 
-	  var result = data["result"][0]; 
+    var result = data["result"][0]; 
     if (result["tt"] == clue) {
-	    this.clues.push(clue);
-	    // TODO: translate this.clues from knowerLang to gueserLang if needed
-	    // clueSuccess is an event for both knower and guesser.
-		this.knower.emit('clueSuccess', { role: 'knower', msg: 'Clue accepted, please wait for guess.' });
-		this.guesser.emit('clueSuccess', { role: 'guesser', clues: this.clues, guesses: this.guesses });
-	  } else {
-	    sock.emit('clueFail', clue + ' was not found in PanLex. Please submit another.');
-	  }
+      this.clues.push(clue);
+      // TODO: translate this.clues from knowerLang to gueserLang if needed
+      // clueSuccess is an event for both knower and guesser.
+      this.knower.emit('clueSuccess', {"role": "knower", "msg": "Clue accepted, please wait for guess."});
+      this.guesser.emit('clueSuccess', {"role": "guesser", "clues": this.clues, "guesses": this.guesses});
+    } else {
+      sock.emit('clueFail', {"msg": clue + " was not found in PanLex. Please submit another."});
+    }
   }
 
   var followsRules = this.verifyClue(clue);
   var params = {
-    uid: this.knowerLang,
-    tt: clue,
+    "uid": this.knowerLang,
+    "tt": clue,
   };
  
   if (followsRules) {
     panlex.query('/ex', params, checkClueInPanlex); 
   } else {
-    sock.emit('clueFail', clue + " does not follow rules for clues. Please submit another.");
+    sock.emit('clueFail', {"msg": clue + " does not follow rules for clues. Please submit another."});
   }
 }
 
@@ -116,41 +113,41 @@ PasswordGame.prototype.onReceiveGuess = function(sock, guess) {
   function checkGuessInPanlex(err, data) {
     /* Callback function for panlex.query. Checks if guess was returned
      * from PanLex query, and acts accordingly. */
-   	if (err) {
-	  console.log("Something went wrong with the query");
-	}
+    if (err) {
+      console.log("Something went wrong with the query");
+    }
 
-	var result = data["result"][0]; 
-	// TODO: may want to write separate function for handling this conditional block
-	if (result["tt"] == guess) {
-	  this.guesses.push(guess);
-	  // TODO: translate this.guesses from knowerLang to guesserLang if needed
-	  var guessMatches = guess == this.password;
+    var result = data["result"][0]; 
+    // TODO: may want to write separate function for handling this conditional block
+    if (result["tt"] == guess) {
+      this.guesses.push(guess);
+      // TODO: translate this.guesses from knowerLang to guesserLang if needed
+      var guessMatches = guess == this.password;
       if (guessMatches) {
         this.resetGame(true);
       }
-	  var overGuessLimit = this.guesses >= 10;
-	  if (overGuessLimit) {
+      var overGuessLimit = this.guesses >= 10;
+      if (overGuessLimit) {
         this.resetGame(false);
-	  } else {
-		this.guesser.emit('guessSuccess', {role: 'guesser', msg: 'Guess not correct. Please wait for next clue' });
-		this.knower.emit('guessSuccess', {role: 'knower', clues: this.clues, guesses: this.guesses });
-	  }
-	} else {
-	  sock.emit('guessFail', guess + " not found in PanLex. Please submit another.");
-	}
+      } else {
+        this.guesser.emit('guessSuccess', {"role": "guesser", "msg": "Guess not correct. Please wait for next clue"});
+        this.knower.emit('guessSuccess', {"role": "knower", "clues": this.clues, "guesses": this.guesses});
+      }
+    } else {
+      sock.emit('guessFail', {"msg": guess + " not found in PanLex. Please submit another."});
+    }
   }
 
   var followsRules = this.verifyGuess(guess);
   var params = {
-    uid: this.guesserLang,
-    tt: guess,
+    "uid": this.guesserLang,
+    "tt": guess,
   };
  
   if (followsRules) {
     panlex.query('/ex', params, checkGuessInPanlex); 
   } else {
-    sock.emit('guessFail', guess + " does not follow rules for guesses. Please submit another.");
+    sock.emit('guessFail', {"msg": guess + " does not follow rules for guesses. Please submit another."});
   }
 }
 
@@ -158,21 +155,21 @@ PasswordGame.prototype.initSockets = function() {
   /* Sets up event listeners for each player in a game. */
   var self = this;
   for (var i=0; i < this.sockets.length; i++) {
-	var sock = this.sockets[i];
-	sock.emit('msg', 'Player found.');
+    var sock = this.sockets[i];
+    sock.emit("msg", "Player found.");
 
-	// Are all these listeners needed? All very similar
-	// Will need more verification of state in game to prevent cheating
+    // Are all these listeners needed? All very similar
+    // Will need more verification of state in game to prevent cheating
 
-    sock.on('password', function(pword) {
+    sock.on("passwordSubmit", function(pword) {
       self.onReceivePassword(sock, pword); 
     });
 
-    sock.on('clue', function(clue) {
+    sock.on("clueSubmit", function(clue) {
       self.onReceiveClue(sock, clue);
     });
 
-    sock.on('guess', function(guess) {
+    sock.on("guessSubmit", function(guess) {
       self.onReceiveGuess(sock, guess);
     });
   }
