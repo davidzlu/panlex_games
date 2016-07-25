@@ -53,7 +53,7 @@ PasswordGame.prototype.onReceivePassword = function(sock, pword) {
       // alert guesser now waiting for clue?
       sock.emit('passwordSuccess', {"msg": "Your password has been set. Please enter a clue", "password": pword});
     } else {
-      socket.emit('passwordFail', {"msg": pword + " was not found in PanLex. Please submit another."});
+      sock.emit('inputFail', {"msg": pword + " was not found in PanLex. Please submit another."});
     }
   }
 
@@ -66,7 +66,7 @@ PasswordGame.prototype.onReceivePassword = function(sock, pword) {
   if (followsRules) {
     panlex.query('/ex', params, checkPasswordInPanlex); 
   } else {
-    socket.emit('passwordFail', {"msg": pword + " does not follow rules for a password. Please submit another."});
+    sock.emit('inputFail', {"msg": pword + " does not follow rules for a password. Please submit another."});
   }
 };
 
@@ -89,7 +89,7 @@ PasswordGame.prototype.onReceiveClue = function(sock, clue) {
       this.knower.emit('clueSuccess', {"role": "knower", "msg": "Clue accepted, please wait for guess."});
       this.guesser.emit('clueSuccess', {"role": "guesser", "clues": this.clues, "guesses": this.guesses});
     } else {
-      sock.emit('clueFail', {"msg": clue + " was not found in PanLex. Please submit another."});
+      sock.emit('inputFail', {"msg": clue + " was not found in PanLex. Please submit another."});
     }
   }
 
@@ -102,7 +102,7 @@ PasswordGame.prototype.onReceiveClue = function(sock, clue) {
   if (followsRules) {
     panlex.query('/ex', params, checkClueInPanlex); 
   } else {
-    sock.emit('clueFail', {"msg": clue + " does not follow rules for clues. Please submit another."});
+    sock.emit('inputFail', {"msg": clue + " does not follow rules for clues. Please submit another."});
   }
 }
 
@@ -134,7 +134,7 @@ PasswordGame.prototype.onReceiveGuess = function(sock, guess) {
         this.knower.emit('guessSuccess', {"role": "knower", "clues": this.clues, "guesses": this.guesses});
       }
     } else {
-      sock.emit('guessFail', {"msg": guess + " not found in PanLex. Please submit another."});
+      sock.emit('inputFail', {"msg": guess + " not found in PanLex. Please submit another."});
     }
   }
 
@@ -147,7 +147,7 @@ PasswordGame.prototype.onReceiveGuess = function(sock, guess) {
   if (followsRules) {
     panlex.query('/ex', params, checkGuessInPanlex); 
   } else {
-    sock.emit('guessFail', {"msg": guess + " does not follow rules for guesses. Please submit another."});
+    sock.emit('inputFail', {"msg": guess + " does not follow rules for guesses. Please submit another."});
   }
 }
 
@@ -156,7 +156,11 @@ PasswordGame.prototype.initSockets = function() {
   var self = this;
   for (var i=0; i < this.sockets.length; i++) {
     var sock = this.sockets[i];
-    sock.emit("msg", "Player found.");
+    if (sock === this.knower) {
+      sock.emit("matched", {"msg":"Player found. You are the password holder.", "role":"knower"});
+    } else if (sock === this.guesser) {
+      sock.emit("matched", {"msg":"Player found. You are the guesser.", "role":"guesser"});
+    }
 
     // Are all these listeners needed? All very similar
     // Will need more verification of state in game to prevent cheating
