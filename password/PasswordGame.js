@@ -83,11 +83,11 @@ PasswordGame.prototype.onReceiveClue = function(sock, clue) {
 
     var result = data["result"][0]; 
     if (result["tt"] == clue) {
-      this.clues.push(clue);
+      self.clues.push(clue); // problem referencing this, look at immediate invocation
       // TODO: translate this.clues from knowerLang to gueserLang if needed
       // clueSuccess is an event for both knower and guesser.
-      this.knower.emit('clueSuccess', {"role": "knower", "msg": "Clue accepted, please wait for guess."});
-      this.guesser.emit('clueSuccess', {"role": "guesser", "clues": this.clues, "guesses": this.guesses});
+      self.knower.emit('clueSuccess', {"role": "knower", "msg": "Clue accepted, please wait for guess."});
+      self.guesser.emit('clueSuccess', {"role": "guesser", "msg":"Clue sent.", "clues": self.clues, "guesses": self.guesses});
     } else {
       sock.emit('inputFail', {"msg": clue + " was not found in PanLex. Please submit another."});
     }
@@ -100,6 +100,7 @@ PasswordGame.prototype.onReceiveClue = function(sock, clue) {
   };
  
   if (followsRules) {
+    var self = this;
     panlex.query('/ex', params, checkClueInPanlex); 
   } else {
     sock.emit('inputFail', {"msg": clue + " does not follow rules for clues. Please submit another."});
@@ -117,21 +118,24 @@ PasswordGame.prototype.onReceiveGuess = function(sock, guess) {
       console.log("Something went wrong with the query");
     }
 
-    var result = data["result"][0]; 
+    var result = data["result"][0];
+    if (result == false) {
+      
+    }
     // TODO: may want to write separate function for handling this conditional block
     if (result["tt"] == guess) {
-      this.guesses.push(guess);
+      self.guesses.push(guess);
       // TODO: translate this.guesses from knowerLang to guesserLang if needed
-      var guessMatches = guess == this.password;
+      var guessMatches = guess == self.password;
       if (guessMatches) {
-        this.resetGame(true);
+        self.resetGame(true);
       }
-      var overGuessLimit = this.guesses >= 10;
+      var overGuessLimit = self.guesses >= 10;
       if (overGuessLimit) {
-        this.resetGame(false);
+        self.resetGame(false);
       } else {
-        this.guesser.emit('guessSuccess', {"role": "guesser", "msg": "Guess not correct. Please wait for next clue"});
-        this.knower.emit('guessSuccess', {"role": "knower", "clues": this.clues, "guesses": this.guesses});
+        self.guesser.emit('guessSuccess', {"role": "guesser", "msg": "Guess not correct. Please wait for next clue"});
+        self.knower.emit('guessSuccess', {"role": "knower", "clues": self.clues, "guesses": self.guesses});
       }
     } else {
       sock.emit('inputFail', {"msg": guess + " not found in PanLex. Please submit another."});
@@ -145,6 +149,7 @@ PasswordGame.prototype.onReceiveGuess = function(sock, guess) {
   };
  
   if (followsRules) {
+    var self = this;
     panlex.query('/ex', params, checkGuessInPanlex); 
   } else {
     sock.emit('inputFail', {"msg": guess + " does not follow rules for guesses. Please submit another."});
@@ -162,19 +167,19 @@ PasswordGame.prototype.initSockets = function() {
       sock.emit("matched", {"msg":"Player found. You are the guesser.", "role":"guesser"});
     }
 
-    // Are all these listeners needed? All very similar
     // Will need more verification of state in game to prevent cheating
 
     sock.on("passwordSubmit", function(pword) {
-      self.onReceivePassword(sock, pword); 
+      // how to keep reference to same socket that sent event?
+      self.onReceivePassword(self.knower, pword); // this sock not referring to same sock as above
     });
 
     sock.on("clueSubmit", function(clue) {
-      self.onReceiveClue(sock, clue);
+      self.onReceiveClue(self.knower, clue);
     });
 
     sock.on("guessSubmit", function(guess) {
-      self.onReceiveGuess(sock, guess);
+      self.onReceiveGuess(self.guesser, guess);
     });
   }
 };

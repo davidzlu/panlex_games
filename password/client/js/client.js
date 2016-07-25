@@ -55,9 +55,11 @@ $(document).ready(function() {
     var msg = data["msg"];
     GameState.password = data["password"];
     onMessage(msg);
-    $("#passwordContainer").empty();
-    GameState.curScreen = $("#clueContainer");
-    GameState.curScreen.append(createClueElement()).fadeIn();
+    GameState.curScreen.fadeOut(function() {
+      GameState.curScreen.empty();
+      GameState.curScreen = $("#clueContainer");
+      GameState.curScreen.append(createClueElement()).fadeIn();
+    });
   }
 
   function onInputFail(data) {
@@ -77,7 +79,8 @@ $(document).ready(function() {
      * For the guesser, this function:
      *   1) displays confirmation message from server
      *   2) empties waitContainer div of all elements
-     *   3) transitions from wait screen to guess screen */
+     *   3) transitions from wait screen to guess screen
+     *   4) Updates clues and guesses */
     var msg = data["msg"];
     onMessage(msg);
     if (GameState.role == "knower") {
@@ -87,6 +90,8 @@ $(document).ready(function() {
         GameState.curScreen.append(createWaitElement()).fadeIn();
       });
     } else if (GameState.role == "guesser") {
+      GameState.clues = data["clues"];
+      GameState.guesses = data["guesses"];
       GameState.curScreen.fadeOut(function() {
         GameState.curScreen.empty();
         GameState.curScreen = $("#guessContainer");
@@ -138,7 +143,7 @@ $(document).ready(function() {
   }
 
   function createClueElement() {
-    var clueElem = $("<div>", { id: "clueElem"});
+    var clueElem = $("<div>", {id: "clueElem"});
     var clueFormTitle = $("<h2>Enter a clue</h2>");
     var clueForm = _createFormElement("clue", "clueSubmit");
     var clueList = _createClueList();
@@ -192,10 +197,10 @@ $(document).ready(function() {
      * socketEvent: the event to emit upon submission */
     var form = $("<form></form>");
     var input = $("<input>", {type: "text", name: inputName});
-    var submitButton = $("<button>", {type: "button", name:"submit"});
+    var submitButton = $("<button>", {type: "button", name:inputName});
     submitButton.text("Submit");
     form.append(input, "<br/>", submitButton);
-    $("#container").on("click", "button[name=submit]", function() {
+    submitButton.on("click", function() {
       sock.emit(socketEvent, $("input[name="+inputName+"]").val());
       GameState.curScreen.fadeOut(); // to avoid multiple submissions at once?
     });
@@ -222,7 +227,14 @@ $(document).ready(function() {
     });
   }
 
-  // TODO: Refactor this function
+  function displayLanguages() {
+    /* Handles transition from start screen to language input screen. */
+    GameState.curScreen.fadeOut(function() {
+      GameState.curScreen = $("#languagesContainer");
+      GameState.curScreen.fadeIn();
+    });
+  }
+
   function displayPassword() {
     GameState.curScreen.fadeOut(function() {
       switch (GameState.curScreen.attr("id")) {
@@ -252,15 +264,6 @@ $(document).ready(function() {
     });
   }
 
-  function displayLanguages() {
-    /* Handles transition from start screen to language input screen. */
-    GameState.curScreen.fadeOut(function() {
-      GameState.curScreen = $("#languagesContainer");
-      GameState.curScreen.fadeIn();
-    });
-  }
-
-  // TODO: refactor this function
   function displayGuess() {
     GameState.curScreen.fadeOut(function() {
       switch (GameState.curScreen.attr("id")) {
