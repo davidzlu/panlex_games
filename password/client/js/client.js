@@ -14,7 +14,7 @@ $(document).ready(function() {
     curScreen: $("#startContainer"),
     role: "",
     password: "",
-    guess: "",
+    guesses: [],
     clues: [],
   }
 
@@ -113,6 +113,8 @@ $(document).ready(function() {
     var msg = data["msg"];
     onMessage(msg);
     if (GameState.role == "knower") {
+      GameState.clues = data["clues"];
+      GameState.guesses = data["guesses"];
       GameState.curScreen.fadeOut(function() {
         GameState.curScreen.empty();
         GameState.curScreen = $("#clueContainer");
@@ -146,21 +148,23 @@ $(document).ready(function() {
     var clueElem = $("<div>", {id: "clueElem"});
     var clueFormTitle = $("<h2>Enter a clue</h2>");
     var clueForm = _createFormElement("clue", "clueSubmit");
-    var clueList = _createClueList();
+    var clueList = _createSubmissionList("clues", "clueList");
+    var guessList = _createSubmissionList("guesses", "guessList");
     var endButton = _createEndButton();
     
-    clueElem.append(clueFormTitle, clueList, clueForm, endButton);
+    clueElem.append(clueFormTitle, clueList, guessList, clueForm, endButton);
     return clueElem;
   }
 
   function createGuessElement() {
     var guessElem = $("<div>", { id: "guessElem"});
     var title = $("<h2>Type in a guess</h2>");
-    var clueList = _createClueList();
+    var clueList = _createSubmissionList("clues", "clueList");
+    var guessList = _createSubmissionList("guesses", "guessList");
     var form = _createFormElement("guess", "guessSubmit");
     var endButton = _createEndButton();
 
-    guessElem.append(title, clueList, form, endButton);
+    guessElem.append(title, clueList, guessList, form, endButton);
     return guessElem;
   }
 
@@ -207,13 +211,13 @@ $(document).ready(function() {
     return form;
   }
 
-  function _createClueList() {
-    var clueList = $("<ol>", {id: "clueList"});
-    for (var i=0; i<GameState.clues.length; i++) {
-      var clueItem = $("<li>"+GameState.clues[i]+"</li>");
-      clueList.append(clueItem);
+  function _createSubmissionList(lst, lstname) {
+    var subList = $("<ol>", {id: lstname});
+    for (var i=0; i<GameState[lst].length; i++) {
+      var lstItem = $("<li>"+GameState[lst][i]+"</li>");
+      subList.append(lstItem);
     }
-    return clueList;
+    return subList;
   }
 
   function _createEndButton() {

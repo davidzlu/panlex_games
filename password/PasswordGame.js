@@ -1,5 +1,5 @@
 var panlex = require("panlex");
-panlex.setUserAgent('Password Game', '0.0');
+panlex.setUserAgent("Password Game", "0.0");
 
 function PasswordGame(sock1, sock1Lang, sock2, sock2Lang) {
   /* An object that tracks the state of a game of Password for two players,
@@ -9,7 +9,7 @@ function PasswordGame(sock1, sock1Lang, sock2, sock2Lang) {
   this.knowerLang = sock1Lang;
   this.guesser = sock2;
   this.guesserLang = sock2Lang;
-  this.password = '';
+  this.password = "";
   this.clues = [];
   this.guesses = [];
 
@@ -19,10 +19,10 @@ function PasswordGame(sock1, sock1Lang, sock2, sock2Lang) {
 PasswordGame.prototype.verifyPassword = function(pword) {
   /* Checks if pword satisfies game rules for passwords. */
   // check if proper noun somehow?
-  return (/^[a-z]+$/.test(pword)); // if pword has only lower case letters
+  return /^[a-z]+$/.test(pword); // if pword has only lower case letters
 };
 
-PasswordGame.prototype.verifyClue = function(clue) {
+PasswordGame.prototype.verifyClue = function(clue) { // Not working as intended
   /* Checks if clue satisfies game rules for clues. */
   return /^[a-z]+$/.test(clue) && this.password.indexOf(clue) == -1 && this.clues.indexOf(clue) == -1;
 };
@@ -31,10 +31,6 @@ PasswordGame.prototype.verifyGuess = function(guess) {
   /* Checks if guess satisfies game rules for guesses. */
   return /^[a-z]+$/.test(guess) && this.guesses.indexOf(guess) == -1;
 };
-
-function onSetPassword() {
-
-}
 
 PasswordGame.prototype.onReceivePassword = function(sock, pword) {
   /* Checks if password 'pword' from player 'sock' is valid. Passwords must
@@ -49,7 +45,7 @@ PasswordGame.prototype.onReceivePassword = function(sock, pword) {
 
     var result = data["result"][0];   
     if (result["tt"] == pword) {
-      this.password = pword;
+      self.password = pword;
       // alert guesser now waiting for clue?
       sock.emit('passwordSuccess', {"msg": "Your password has been set. Please enter a clue", "password": pword});
     } else {
@@ -64,6 +60,7 @@ PasswordGame.prototype.onReceivePassword = function(sock, pword) {
   };
  
   if (followsRules) {
+    var self = this;
     panlex.query('/ex', params, checkPasswordInPanlex); 
   } else {
     sock.emit('inputFail', {"msg": pword + " does not follow rules for a password. Please submit another."});
@@ -119,23 +116,22 @@ PasswordGame.prototype.onReceiveGuess = function(sock, guess) {
     }
 
     var result = data["result"][0];
-    if (result == false) {
-      
+    if (result == false) { // Or something more sensible
+
     }
     // TODO: may want to write separate function for handling this conditional block
     if (result["tt"] == guess) {
       self.guesses.push(guess);
       // TODO: translate this.guesses from knowerLang to guesserLang if needed
       var guessMatches = guess == self.password;
+      var overGuessLimit = self.guesses >= 10;
       if (guessMatches) {
         self.resetGame(true);
-      }
-      var overGuessLimit = self.guesses >= 10;
-      if (overGuessLimit) {
+      } else if (overGuessLimit) {
         self.resetGame(false);
       } else {
         self.guesser.emit('guessSuccess', {"role": "guesser", "msg": "Guess not correct. Please wait for next clue"});
-        self.knower.emit('guessSuccess', {"role": "knower", "clues": self.clues, "guesses": self.guesses});
+        self.knower.emit('guessSuccess', {"role": "knower", "msg":"Guess sent", "clues": self.clues, "guesses": self.guesses});
       }
     } else {
       sock.emit('inputFail', {"msg": guess + " not found in PanLex. Please submit another."});
