@@ -60,7 +60,14 @@ PasswordGame.prototype.verifyGuess = function(guess) {
 };
 
 function _verifyExp(plxData, exp) {
-
+  var result = plxData["result"];
+  console.log(plxData);
+  for (var i=0; i<plxData["resultNum"]; i++) {
+    if (result[i]["tt"] === exp) {
+      return true;
+    }
+  }
+  return false;
 }
 
 PasswordGame.prototype._translateExpressions = function(exps) {
@@ -76,14 +83,14 @@ PasswordGame.prototype.onReceivePassword = function(sock, pword) {
      * from PanLex query, and acts accordingly. */
     if (err) {
       console.log("Something went wrong with the query");
-    }
-
-    var result = data["result"][0];   
-    if (result["tt"] == pword) {
-      self.password = pword;
-      sock.emit('passwordSuccess', {"msg": "Your password has been set. Please enter a clue", "password": pword});
+      //Ask to resend
     } else {
-      sock.emit('inputFail', {"msg": pword + " was not found in PanLex. Please submit another."});
+      if (_verifyExp(data, pword)) {
+        self.password = pword;
+        sock.emit('passwordSuccess', {"msg": "Your password has been set. Please enter a clue", "password": pword});
+      } else {
+        sock.emit('inputFail', {"msg": pword + " was not found in PanLex. Please submit another."});
+      }
     }
   }
 
@@ -110,16 +117,16 @@ PasswordGame.prototype.onReceiveClue = function(sock, clue) {
      * from PanLex query, and acts accordingly. */
     if (err) {
       console.log("Something went wrong with the query");
-    }
-
-    var result = data["result"][0];
-    if (result["tt"] == clue) {
-      self.clues.push(clue);
-      // TODO: translate this.clues from knowerLang to gueserLang if needed
-      self.knower.emit('clueSuccess', {"role": "knower", "msg": "Clue accepted, please wait for guess."});
-      self.guesser.emit('clueSuccess', {"role": "guesser", "msg":"Clue sent.", "clues": self.clues, "guesses": self.guesses});
+      //Ask to resend
     } else {
-      sock.emit('inputFail', {"msg": clue + " was not found in PanLex. Please submit another."});
+      if (_verifyExp(data, clue)) {
+        self.clues.push(clue);
+        // TODO: translate this.clues from knowerLang to gueserLang if needed
+        self.knower.emit("clueSuccess", {"role": "knower", "msg": "Clue accepted, please wait for guess."});
+        self.guesser.emit("clueSuccess", {"role": "guesser", "msg":"Clue sent.", "clues": self.clues, "guesses": self.guesses});
+      } else {
+        sock.emit("inputFail", {"msg": clue + " was not found in PanLex. Please submit another."});
+      }
     }
   }
 
@@ -146,28 +153,24 @@ PasswordGame.prototype.onReceiveGuess = function(sock, guess) {
      * from PanLex query, and acts accordingly. */
     if (err) {
       console.log("Something went wrong with the query");
-    }
-
-    var result = data["result"][0];
-    if (result == false) { // Or something more sensible
-
-    }
-    // TODO: may want to write separate function for handling this conditional block
-    if (result["tt"] == guess) {
-      self.guesses.push(guess);
-      // TODO: translate this.guesses from knowerLang to guesserLang if needed
-      var guessMatches = guess == self.password;
-      var overGuessLimit = self.guesses.length >= self.roundLength;
-      if (guessMatches) {
-        self.endRound(true);
-      } else if (overGuessLimit) {
-        self.endRound(false);
-      } else {
-        self.guesser.emit('guessSuccess', {"role": "guesser", "msg": "Guess not correct. Please wait for next clue"});
-        self.knower.emit('guessSuccess', {"role": "knower", "msg":"Guess sent", "clues": self.clues, "guesses": self.guesses});
-      }
     } else {
-      sock.emit('inputFail', {"msg": guess + " not found in PanLex. Please submit another."});
+      // TODO: may want to write separate function for handling this conditional block
+      if (_verifyExp(data, guess)) {
+        self.guesses.push(guess);
+        // TODO: translate this.guesses from knowerLang to guesserLang if needed
+        var guessMatches = guess == self.password;
+        var overGuessLimit = self.guesses.length >= self.roundLength;
+        if (guessMatches) {
+          self.endRound(true);
+        } else if (overGuessLimit) {
+          self.endRound(false);
+        } else {
+          self.guesser.emit("guessSuccess", {"role": "guesser", "msg": "Guess not correct. Please wait for next clue"});
+          self.knower.emit("guessSuccess", {"role": "knower", "msg":"Guess sent", "clues": self.clues, "guesses": self.guesses});
+        }
+      } else {
+        sock.emit('inputFail', {"msg": guess + " not found in PanLex. Please submit another."});
+      }
     }
   }
 
