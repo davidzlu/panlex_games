@@ -12,17 +12,44 @@ function PasswordGame(sock1, sock1Lang, sock2, sock2Lang) {
   this.password = "";
   this.clues = [];
   this.guesses = [];
+  this.roundLength = 10;
 
   this.initSockets();
+};
+
+PasswordGame.prototype.initSockets = function() {
+  /* Sets up event listeners for each player in a game. */
+  var self = this;
+  for (var i=0; i < this.sockets.length; i++) {
+    var sock = this.sockets[i];
+    if (sock === this.knower) {
+      sock.emit("matched", {"msg":"Player found. You are the password holder.", "role":"knower"});
+    } else if (sock === this.guesser) {
+      sock.emit("matched", {"msg":"Player found. You are the guesser.", "role":"guesser"});
+    }
+
+    // Will need more verification of state in game to prevent cheating
+    sock.on("passwordSubmit", function(pword) {
+      self.onReceivePassword(self.knower, pword);
+    });
+
+    sock.on("clueSubmit", function(clue) {
+      self.onReceiveClue(self.knower, clue);
+    });
+
+    sock.on("guessSubmit", function(guess) {
+      self.onReceiveGuess(self.guesser, guess);
+    });
+  }
 };
 
 PasswordGame.prototype.verifyPassword = function(pword) {
   /* Checks if pword satisfies game rules for passwords. */
   // check if proper noun somehow?
-  return /^[a-z]+$/.test(pword); // if pword has only lower case letters
+  return /^[a-z]+$/.test(pword);
 };
 
-PasswordGame.prototype.verifyClue = function(clue) { // Not working as intended
+PasswordGame.prototype.verifyClue = function(clue) {
   /* Checks if clue satisfies game rules for clues. */
   return /^[a-z]+$/.test(clue) && this.password.indexOf(clue) == -1 && this.clues.indexOf(clue) == -1;
 };
@@ -31,6 +58,14 @@ PasswordGame.prototype.verifyGuess = function(guess) {
   /* Checks if guess satisfies game rules for guesses. */
   return /^[a-z]+$/.test(guess) && this.guesses.indexOf(guess) == -1;
 };
+
+function _verifyExp(plxData, exp) {
+
+}
+
+PasswordGame.prototype._translateExpressions = function(exps) {
+
+}
 
 PasswordGame.prototype.onReceivePassword = function(sock, pword) {
   /* Checks if password 'pword' from player 'sock' is valid. Passwords must
@@ -46,7 +81,6 @@ PasswordGame.prototype.onReceivePassword = function(sock, pword) {
     var result = data["result"][0];   
     if (result["tt"] == pword) {
       self.password = pword;
-      // alert guesser now waiting for clue?
       sock.emit('passwordSuccess', {"msg": "Your password has been set. Please enter a clue", "password": pword});
     } else {
       sock.emit('inputFail', {"msg": pword + " was not found in PanLex. Please submit another."});
@@ -80,9 +114,8 @@ PasswordGame.prototype.onReceiveClue = function(sock, clue) {
 
     var result = data["result"][0];
     if (result["tt"] == clue) {
-      self.clues.push(clue); // problem referencing this, look at immediate invocation
+      self.clues.push(clue);
       // TODO: translate this.clues from knowerLang to gueserLang if needed
-      // clueSuccess is an event for both knower and guesser.
       self.knower.emit('clueSuccess', {"role": "knower", "msg": "Clue accepted, please wait for guess."});
       self.guesser.emit('clueSuccess', {"role": "guesser", "msg":"Clue sent.", "clues": self.clues, "guesses": self.guesses});
     } else {
@@ -124,7 +157,7 @@ PasswordGame.prototype.onReceiveGuess = function(sock, guess) {
       self.guesses.push(guess);
       // TODO: translate this.guesses from knowerLang to guesserLang if needed
       var guessMatches = guess == self.password;
-      var overGuessLimit = self.guesses >= 10;
+      var overGuessLimit = self.guesses.length >= self.roundLength;
       if (guessMatches) {
         self.endRound(true);
       } else if (overGuessLimit) {
@@ -152,39 +185,10 @@ PasswordGame.prototype.onReceiveGuess = function(sock, guess) {
   }
 }
 
-PasswordGame.prototype.initSockets = function() {
-  /* Sets up event listeners for each player in a game. */
-  var self = this;
-  for (var i=0; i < this.sockets.length; i++) {
-    var sock = this.sockets[i];
-    if (sock === this.knower) {
-      sock.emit("matched", {"msg":"Player found. You are the password holder.", "role":"knower"});
-    } else if (sock === this.guesser) {
-      sock.emit("matched", {"msg":"Player found. You are the guesser.", "role":"guesser"});
-    }
-
-    // Will need more verification of state in game to prevent cheating
-
-    sock.on("passwordSubmit", function(pword) {
-      // how to keep reference to same socket that sent event?
-      self.onReceivePassword(self.knower, pword); // this sock not referring to same sock as above
-    });
-
-    sock.on("clueSubmit", function(clue) {
-      self.onReceiveClue(self.knower, clue);
-    });
-
-    sock.on("guessSubmit", function(guess) {
-      self.onReceiveGuess(self.guesser, guess);
-    });
-  }
-};
-
-
 PasswordGame.prototype.endRound = function(gameWon) {
   /* gameWon is a boolean, true if the guesser guessed the password
    * within ten guesses, false otherwise. */
-  //if tracking score, calculate
+  //if tracking score, calculate here
 
   var knowerMsg, guesserMsg;
   if (gameWon) {
