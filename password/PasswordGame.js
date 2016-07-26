@@ -78,7 +78,7 @@ PasswordGame.prototype.onReceiveClue = function(sock, clue) {
       console.log("Something went wrong with the query");
     }
 
-    var result = data["result"][0]; 
+    var result = data["result"][0];
     if (result["tt"] == clue) {
       self.clues.push(clue); // problem referencing this, look at immediate invocation
       // TODO: translate this.clues from knowerLang to gueserLang if needed
@@ -126,9 +126,9 @@ PasswordGame.prototype.onReceiveGuess = function(sock, guess) {
       var guessMatches = guess == self.password;
       var overGuessLimit = self.guesses >= 10;
       if (guessMatches) {
-        self.resetGame(true);
+        self.endRound(true);
       } else if (overGuessLimit) {
-        self.resetGame(false);
+        self.endRound(false);
       } else {
         self.guesser.emit('guessSuccess', {"role": "guesser", "msg": "Guess not correct. Please wait for next clue"});
         self.knower.emit('guessSuccess', {"role": "knower", "msg":"Guess sent", "clues": self.clues, "guesses": self.guesses});
@@ -181,9 +181,35 @@ PasswordGame.prototype.initSockets = function() {
 };
 
 
-PasswordGame.prototype.resetGame = function(gameWon) {
+PasswordGame.prototype.endRound = function(gameWon) {
   /* gameWon is a boolean, true if the guesser guessed the password
    * within ten guesses, false otherwise. */
+  //if tracking score, calculate
+
+  var knowerMsg, guesserMsg;
+  if (gameWon) {
+    knowerMsg = "The guesser guessed correctly. Ending round";
+    guesserMsg = "You guessed correctly. Ending round";
+  } else {
+    knowerMsg = "The guesser did not guess your password. Ending round";
+    guesserMsg = "You ran out of guesses. The password was: "+this.password+". Ending round";
+  }
+  this.password = "";
+  this.clues = [];
+  this.guesses = [];
+
+  this.knower.emit("endRound", {"msg":knowerMsg, "clues":this.clues, "guesses":this.guesses, "password":this.password});
+  this.guesser.emit("endRound", {"msg":guesserMsg, "clues":this.clues, "guesses":this.guesses, "password":this.password});
+
+  var sockPlaceholder = this.guesser;
+  var langPlaceholder = this.guesserLang;
+  this.guesser = this.knower;
+  this.guesserLang = this.knowerLang;
+  this.knower = sockPlaceholder;
+  this.knowerLang = langPlaceholder;
+
+  this.knower.emit("matched", {"msg":"You are the password holder.", "role":"knower"});
+  this.guesser.emit("matched", {"msg":"You are the guesser.", "role":"guesser"});
 }
 
 module.exports = PasswordGame;

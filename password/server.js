@@ -27,17 +27,24 @@ function onConnection(sock) {
   */
   sock.emit('msg', 'Hello, You are playing Password!');
   sock.on('language', function(lang) {
-    // Currently assuming lang is uid of chosen language
-    if (waitingPlayer) {
+    //assuming lang is uid
+    //TODO: check if lang is in PanLex
+    /*if language in panlex:
+        continue as normal
+        sock.emit("languageSuccess", {})
+      else:
+        sock.emit("languageFail, {"msg":"Language not found, please enter another."});*/
+
+    if (waitingPlayer) { // Make sure waitingPlayer not same as sock
+      sock.emit("languageSuccess", {"lang":lang, "waiting":false});
       new PasswordGame(waitingPlayer, waitingPlayerLang, sock, lang);
       waitingPlayer = null;
       waitingPlayerLang = null;
     } else {
-      waitingPlayer = sock;
+      waitingPlayer = sock; // may be racing condition
       waitingPlayerLang = lang;
+      sock.emit("languageSuccess", {"lang":lang, "waiting":true});
       // TODO: change event to move client to matching screen
-      sock.emit('msg', 'Matching you with another player');
     }
   });
 }
-

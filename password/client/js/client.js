@@ -4,13 +4,23 @@ $(document).ready(function() {
   var sock = io();
   sock.on("matched", onMatched);
   sock.on("passwordSuccess", onPasswordSuccess);
-  sock.on("inputFail", onInputFail);
   sock.on("clueSuccess", onClueSuccess);
   sock.on("guessSuccess", onGuessSuccess);
+  sock.on("inputFail", onInputFail);
+  sock.on("languageSuccess", onLangaugeSuccess);
+  sock.on("languageFail", onLanguageFail);
+  sock.on("endRound", onEndRound);
+
+  function onEndRound(data) {
+    var msg = data["msg"];
+    GameState.clues = data["clues"];
+    GameState.guesses = data["guesses"];
+    GameState.password = data["password"];
+    onMessage(msg);
+  }
 
   // TODO: how to keep these variables around? Is this the most sensible way?
   var GameState = {
-    sourceLanguage: "",
     curScreen: $("#startContainer"),
     role: "",
     password: "",
@@ -129,6 +139,28 @@ $(document).ready(function() {
     }
   }
 
+  function onLangaugeSuccess(data) {
+    /* This function:
+     *   1) Send confirmation messgage
+     *   2) Transitions to matching screen */
+    var sourceLanguage = data["lang"];
+    $("p:last").text("Playing in "+sourceLanguage);
+    if (data["waiting"]) {
+      GameState.curScreen.fadeOut(function() {
+        GameState.curScreen.empty();
+        GameState.curScreen = $("#matchingContainer");
+        GameState.curScreen.append("<p>Matching...</p>").fadeIn();
+      });
+    }
+  }
+
+  function onLanguageFail(data) {
+    /* This function:
+     *   1) Sends error message asking for another language */
+    var msg = data["msg"];
+    onMessage(msg);
+  }
+
   function onGameEnd(data) {
 
   }
@@ -239,90 +271,6 @@ $(document).ready(function() {
     });
   }
 
-  function displayPassword() {
-    GameState.curScreen.fadeOut(function() {
-      switch (GameState.curScreen.attr("id")) {
-        case "matching":
-          GameState.curScreen = $("#passwordContainer");
-          GameState.curScreen.append(createPasswordForm()).fadeIn();
-          break;
-        case "clue":
-          GameState.curScreen = $("#waiting");
-          $("#clueContainer").empty();
-          GameState.curScreen.append(createWaitScreen(), endButton).fadeIn();
-          break;
-        case "waiting":
-          if (GameState.guess == GameState.password) {
-            GameState.curScreen = $("#swap");
-            GameState.curScreen.append(createSwapScreen()).fadeIn();
-          } else {
-            GameState.curScreen = $("#passwordContainer");
-            displayPassword();
-          }
-          break;
-        default:
-          GameState.curScreen = $("#matchingContainer");
-          GameState.guess = "hello"
-          displayPassword();
-      }
-    });
-  }
-
-  function displayGuess() {
-    GameState.curScreen.fadeOut(function() {
-      switch (GameState.curScreen.attr("id")) {
-        case "matching":
-          GameState.curScreen = $("#waiting");
-          GameState.curScreen.append(createWaitScreen()).fadeIn();
-          //GameState.curScreen.append("Playing in "+GameState.sourceLanguage);
-          break;
-        case "waiting":
-          GameState.curScreen = $("#guessContainer");
-          $("button[name=endButton]").remove();
-          var endButton = $("<button type='button' name='endButton'>End Round</button>");
-          GameState.curScreen.append(createGuessForm(), endButton).fadeIn();
-          $("button[name=endButton]").on("click", function() {
-            GameState.guess = GameState.password;
-            displayGuess();
-          });
-          break;
-        case "guess":        
-          if (GameState.guess == GameState.password) {
-            GameState.curScreen = $("#swap");
-            GameState.curScreen.append(createSwapScreen()).fadeIn();
-
-          } else {
-            GameState.curScreen = $("#matchingContainer");
-            displayGuess();
-          }
-          break;
-        default:
-          GameState.curScreen = $("#matchingContainer");
-          GameState.guess = "hello"
-          displayGuess();
-      }
-    });
-  }
-
-  function displayPlayScreen() {
-    // Manages selection b/t displayPassword and displayGuess
-    if (GameState.role == "password") {
-      displayPassword();
-    } else if (GameState.role == "guess") {
-      displayGuess();
-    }
-  }
-
-  function displayMatching() {
-    GameState.curScreen.fadeOut(function() {
-      GameState.curScreen.empty();
-      GameState.curScreen = $("#matchingContainer");
-      GameState.curScreen.append("<p>Matching...</p>");//<p>Playing in "+GameState.sourceLanguage+"</p>");
-      //GameState.curScreen.append("Playing in "+GameState.sourceLanguage);
-      GameState.curScreen.fadeIn();
-    });
-  }
-
   function displayEnd() {
     /* Handles transition from translation data input to end screen. */
     GameState.curScreen.fadeOut(function() {
@@ -332,15 +280,13 @@ $(document).ready(function() {
     });
   }
 
-  // Event listeners below
-  $("#startContainer button").on("click", displayLanguages);
+  function onLanguageSubmit() {
+    var sourceLanguage = $("#sourceLanguage").val();
+    sock.emit("language", sourceLanguage);
+    // if check is fast enough, no transition needed
+  }
 
-  /*collects GameState.sourceLanguage from user input and sets footer language message*/
-  $("#languagesContainer button").on("click", function() {
-    GameState.sourceLanguage = $("#sourceLanguage").val();
-    $("p:last").text("Playing in "+GameState.sourceLanguage);
-    sock.emit("language", GameState.sourceLanguage);
-    displayMatching();
-  });
-  
+  // Local event listeners below
+  $("#startContainer button").on("click", displayLanguages);
+  $("#languagesContainer button").on("click", onLanguageSubmit);
 });
