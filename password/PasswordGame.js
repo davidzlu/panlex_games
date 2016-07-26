@@ -10,8 +10,11 @@ function PasswordGame(sock1, sock1Lang, sock2, sock2Lang) {
   this.guesser = sock2;
   this.guesserLang = sock2Lang;
   this.password = "";
+  this.translatedPassword = "";
   this.clues = [];
+  this.translatedClues = [];
   this.guesses = [];
+  this.translatedGuesses = [];
   this.roundLength = 10;
 
   this.initSockets();
@@ -60,6 +63,8 @@ PasswordGame.prototype.verifyGuess = function(guess) {
 };
 
 function _verifyExp(plxData, exp) {
+  /* Takes in data from a PanLex query and an expression. Returns true
+   * if expression was returned from query, false otherwise. */
   var result = plxData["result"];
   console.log(plxData);
   for (var i=0; i<plxData["resultNum"]; i++) {
@@ -70,8 +75,18 @@ function _verifyExp(plxData, exp) {
   return false;
 }
 
-PasswordGame.prototype._translateExpressions = function(exps) {
+PasswordGame.prototype._translateExpression = function(exp, targetLang, cb) {
+  /* Takes a single expression and translates it to a target language. 
+   * cb is a callback function for the PanLex query. */
+  var params = {
+    "uid": targetLang,
+    "trtt": exp,
+    "include": "trq",
+    "sort":"trq desc",
+    "limit": 1,
+  };
 
+  panlex.query("/ex", params, cb);
 }
 
 PasswordGame.prototype.onReceivePassword = function(sock, pword) {
@@ -123,7 +138,12 @@ PasswordGame.prototype.onReceiveClue = function(sock, clue) {
         self.clues.push(clue);
         // TODO: translate this.clues from knowerLang to gueserLang if needed
         self.knower.emit("clueSuccess", {"role": "knower", "msg": "Clue accepted, please wait for guess."});
-        self.guesser.emit("clueSuccess", {"role": "guesser", "msg":"Clue sent.", "clues": self.clues, "guesses": self.guesses});
+        self._translateExpression(clue, self.guesserLang, function(err, data) {
+          var transClue = data["result"][0]["tt"];
+          self.translatedClues.push(transClue);
+          self.guesser.emit("clueSuccess", {"role": "guesser", "msg":"Clue sent.", "clues": self.translatedClues, "guesses": self.guesses});
+        });
+        //self.guesser.emit("clueSuccess", {"role": "guesser", "msg":"Clue sent.", "clues": self.clues, "guesses": self.guesses});
       } else {
         sock.emit("inputFail", {"msg": clue + " was not found in PanLex. Please submit another."});
       }
@@ -153,6 +173,7 @@ PasswordGame.prototype.onReceiveGuess = function(sock, guess) {
      * from PanLex query, and acts accordingly. */
     if (err) {
       console.log("Something went wrong with the query");
+      //ask to resend
     } else {
       // TODO: may want to write separate function for handling this conditional block
       if (_verifyExp(data, guess)) {
@@ -166,7 +187,12 @@ PasswordGame.prototype.onReceiveGuess = function(sock, guess) {
           self.endRound(false);
         } else {
           self.guesser.emit("guessSuccess", {"role": "guesser", "msg": "Guess not correct. Please wait for next clue"});
-          self.knower.emit("guessSuccess", {"role": "knower", "msg":"Guess sent", "clues": self.clues, "guesses": self.guesses});
+          self._translateExpression(guess, self.knowerLang, function() {
+            var transGuess = data["result"][0]["tt"];
+            self.translatedGuesses.push(transGuess);
+            self.knower.emit("guessSuccess", {"role": "knower", "msg":"Guess sent", "clues": self.clues, "guesses": self.translatedGuesses});
+          });
+          //self.knower.emit("guessSuccess", {"role": "knower", "msg":"Guess sent", "clues": self.clues, "guesses": self.guesses});
         }
       } else {
         sock.emit('inputFail', {"msg": guess + " not found in PanLex. Please submit another."});
