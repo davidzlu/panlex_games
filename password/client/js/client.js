@@ -161,10 +161,6 @@ $(document).ready(function() {
     onMessage(msg);
   }
 
-  function onGameEnd(data) {
-
-  }
-
   /* createXXXElement functions create a div that will contain all
    * necesseary parts of a screen. These divs will be in another div
    * with the name of XXXContainer. */
@@ -231,7 +227,7 @@ $(document).ready(function() {
     /* Creates an HTML form element that accepts text input.
      * inputName: name of input element
      * socketEvent: the event to emit upon submission */
-    var form = $("<form></form>");
+    var form = $("<div>");
     var input = $("<input>", {type: "text", name: inputName});
     var submitButton = $("<button>", {type: "button", name:inputName});
     submitButton.text("Submit");
@@ -259,7 +255,6 @@ $(document).ready(function() {
       if (GameState.guess == GameState.password) {
         //do something really obvious
       }
-
     });
   }
 
