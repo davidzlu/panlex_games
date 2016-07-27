@@ -1,14 +1,30 @@
-var http = require("http");
+//var http = require("http");
     var url = require('url');
     var fs = require('fs');
-
-    var express = require("express");
-
-
-    var app = express();
-    app.get('/ai_password.js', function(req, res){
-        res.sendFile(__dirname+'/ai_password.js'); 
+    fs.exists("ai_game.css", function(exists) {
+      if (exists) {
+        console.log("ai_game.css exists");
+        // serve file
+      } else {
+          console.log("ai_game.css does not exist");
+        // mongodb
+      }
     });
+    var path = require('path');
+    var express = require('express')
+    var app = express();
+    app.use(express.static(path.join(__dirname, '/')));
+    //var express = require("express");
+var http = require("http");
+
+
+    //var app = express();
+    app.get('/ai_game.css', function(req, res){
+      res.sendFile(__dirname+'/ai_game.css');
+    });
+    //app.get('/ai_password.js', function(req, res){
+    //    res.sendFile(__dirname+'/ai_password.js'); 
+    //});
     var server = http.createServer(function(request, response){
         var path = url.parse(request.url).pathname;
 
@@ -18,7 +34,7 @@ var http = require("http");
                 response.write('hello world');
                 response.end();
                 break;
-            case '/ai_password.html':
+            case '/index.html':
                 var winPath = __dirname + "\\"+ String(path).substr(1,path.length);
                 fs.readFile(winPath, function(error, data){
                     if (error){

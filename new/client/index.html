@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Password</title>
+    <link rel="stylesheet" type="text/css" href="css/main.css"></link>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+  </head>
+  <body>
+    <div id="container">
+      <div id="title">
+        <h1>The Password Game</h1>
+        <h4>Powered by PanLex</h4>
+      </div><br/>
+      <div class="screen" id="startContainer">
+        <h1>Password</h1>
+        <button name="start">Start</button>
+      </div>
+      <div class="screen" id="languagesContainer" style="display: none;">
+        <form name="languageSelect" action="">
+          Language to use: <input type="text" id="sourceLanguage"><br/>
+          <button type="button">Next</button>
+        </form>
+      </div>
+      <div class="screen" id="matchingContainer"></div>
+      <div class="screen" id="passwordContainer"></div>
+      <div class="screen" id="clueContainer"></div>
+      <div class="screen" id="guessContainer"></div>
+      <div class="screen" id="waitContainer"></div>
+      <div class="screen" id="swapContainer"></div>
+      <div class="screen" id="winContainer"></div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/client.js"></script>
+  </body>
+  <footer>
+    <p>Once you have selected a language, it will be displayed here!</p>
+    <a href="http://new.panlex.org">Quit and return to PanLex Website</a>
+  </footer>
+</html>

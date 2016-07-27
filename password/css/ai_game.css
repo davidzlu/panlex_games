@@ -1,0 +1,24 @@
+body {
+    border: 3px solid #900;
+    padding: 10px 30px 50px 30px;
+    background-color: #ccffff;
+}
+
+button {
+  color: #900;
+  font-weight: bold;
+  height: 30px;
+  width: 80px;
+}
+.fsSubmitButton
+{
+	border-top:		2px solid #a3ceda;
+	border-left:		2px solid #a3ceda;
+	border-right:		2px solid #4f6267;
+	border-bottom:		2px solid #4f6267;
+	padding:		10px 20px !important;
+	font-size:		14px !important;
+	background-color:	#c4f1fe;
+	font-weight:		bold;
+	color:			#2d525d;
+}
