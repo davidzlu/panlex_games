@@ -31,13 +31,13 @@ PasswordGame.prototype._initSockets = function() {
         "msg":"Player found. You are the password holder.",
         "role":"knower"
       };
-      sock.emit("matched", emitData);
+      sock.emit("matchSuccess", emitData);
     } else if (sock === this.guesser) {
       emitData = {
         "msg":"Player found. You are the guesser.",
         "role":"guesser"
       };
-      sock.emit("matched", emitData);
+      sock.emit("matchSuccess", emitData);
     }
 
     // Will need more verification of state in game to prevent cheating
@@ -67,7 +67,7 @@ PasswordGame.prototype._verifyClue = function(clue) {
   return /^[a-z]+$/.test(clue) && this.password.indexOf(clue) == -1 && this.clues.indexOf(clue) == -1;
 };
 
-PasswordGametype._verifyGuess = function(guess) {
+PasswordGame.prototype._verifyGuess = function(guess) {
   /* Checks if guess satisfies game rules for guesses. */
   return /^[a-z]+$/.test(guess) && this.guesses.indexOf(guess) == -1;
 };
@@ -124,16 +124,23 @@ PasswordGame.prototype._onReceivePassword = function(sock, pword) {
     var emitData;
     if (_verifyExp(plxData, pword)) {
       self.password = pword;
-      _translateExpression(pword, this.guesserLang, function(err, data) {
-        _checkPanlexError(err, data, function(data) {
-          if (_verifyTranslation(data)) {
-            self.translatedPassword = data["result"][0]["tt"];
-            console.log(self.translatedPassword);
-          } else {
-            //can't find translation event
-          }
+
+      //translate password block
+      if (self.knowerLang == self.guesserLang) {
+        self.translatedPassword = pword;
+      } else {
+        _translateExpression(pword, this.guesserLang, function(err, data) {
+          _checkPanlexError(err, data, function(data) {
+            if (_verifyTranslation(data)) {
+              self.translatedPassword = data["result"][0]["tt"];
+              console.log(self.translatedPassword);
+            } else {
+              //can't find translation event
+            }
+          });
         });
-      });
+      }
+
       emitData = {
         "msg": "Your password has been set. Please enter a clue",
         "password": pword
@@ -181,9 +188,13 @@ PasswordGame.prototype._onReceiveClue = function(sock, clue) {
       };
       self.knower.emit("clueSuccess", emitData);
 
+      if (self.knowerLang == self.guesserLang) {
+        // don't bother translating
+      }
       _translateExpression(clue, self.guesserLang, function(err, data) {
         _checkPanlexError(err, data, _finishClueTranslation);
       });
+
     } else {
       emitData = {
         "msg": clue + " was not found in PanLex. Please submit another."
@@ -250,6 +261,9 @@ PasswordGame.prototype._onReceiveGuess = function(sock, guess) {
         };
         self.guesser.emit("guessSuccess", emitData);
 
+        if (self.knowerLang == self.guesserLang) {
+          //don't bother translating
+        }
         _translateExpression(guess, self.knowerLang, function(err, data) {
           _checkPanlexError(err, data, _finishGuessTranslation);
         });
@@ -345,8 +359,8 @@ PasswordGame.prototype._endRound = function(gameWon) {
     "msg":"You are the guesser.",
     "role":"guesser"
   };
-  this.knower.emit("matched", knowerData);
-  this.guesser.emit("matched", guesserData);
+  this.knower.emit("matchSuccess", knowerData);
+  this.guesser.emit("matchSuccess", guesserData);
 }
 
 module.exports = PasswordGame;

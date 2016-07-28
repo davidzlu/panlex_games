@@ -2,13 +2,15 @@
 $(document).ready(function() {
 
   var sock = io();
-  sock.on("matched", onMatched);
+  sock.on("matchSuccess", onMatched);
   sock.on("passwordSuccess", onPasswordSuccess);
   sock.on("clueSuccess", onClueSuccess);
   sock.on("guessSuccess", onGuessSuccess);
   sock.on("inputFail", onInputFail);
   sock.on("languageSuccess", onLangaugeSuccess);
   sock.on("languageFail", onLanguageFail);
+  sock.on("matchFail", onMessage);
+  sock.on("msg", onMessage);
   sock.on("endRound", onEndRound);
 
   function onEndRound(data) {

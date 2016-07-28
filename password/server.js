@@ -35,11 +35,13 @@ function onConnection(sock) {
       else:
         sock.emit("languageFail, {"msg":"Language not found, please enter another."});*/
 
-    if (waitingPlayer) { // Make sure waitingPlayer not same as sock
+    if (waitingPlayer && sock !== waitingPlayer) { // Make sure waitingPlayer not same as sock
       sock.emit("languageSuccess", {"lang":lang, "waiting":false});
       new PasswordGame(waitingPlayer, waitingPlayerLang, sock, lang);
       waitingPlayer = null;
       waitingPlayerLang = null;
+    } else if (waitingPlayer && sock === waitingPlayer) {
+      sock.emit("matchFail", "Error, can't play against yourself.");
     } else {
       waitingPlayer = sock; // may be racing condition
       waitingPlayerLang = lang;
