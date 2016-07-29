@@ -7,7 +7,7 @@ $(document).ready(function() {
   sock.on("clueSuccess", onClueSuccess);
   sock.on("guessSuccess", onGuessSuccess);
   sock.on("inputFail", onInputFail);
-  sock.on("languageSuccess", onLangaugeSuccess);
+  sock.on("languageSuccess", onLanguageSuccess);
   sock.on("languageFail", onLanguageFail);
   sock.on("matchFail", onMessage);
   sock.on("msg", onMessage);
@@ -141,7 +141,7 @@ $(document).ready(function() {
     }
   }
 
-  function onLangaugeSuccess(data) {
+  function onLanguageSuccess(data) {
     /* This function:
      *   1) Send confirmation messgage
      *   2) Transitions to matching screen */

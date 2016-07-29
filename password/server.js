@@ -25,28 +25,38 @@ function onConnection(sock) {
     2) Sets up event listener for langauge selection
     3) Matches players in pairs
   */
-  sock.emit('msg', 'Hello, You are playing Password!');
-  sock.on('language', function(lang) {
-    //assuming lang is uid
-    //TODO: check if lang is in PanLex
-    /*if language in panlex:
-        continue as normal
-        sock.emit("languageSuccess", {})
-      else:
-        sock.emit("languageFail, {"msg":"Language not found, please enter another."});*/
 
-    if (waitingPlayer && sock !== waitingPlayer) { // Make sure waitingPlayer not same as sock
-      sock.emit("languageSuccess", {"lang":lang, "waiting":false});
-      new PasswordGame(waitingPlayer, waitingPlayerLang, sock, lang);
+  sock.emit("msg", "Hello, You are playing Password!");
+  sock.on("disconnect", function() {
+    if (sock === waitingPlayer) {
       waitingPlayer = null;
       waitingPlayerLang = null;
-    } else if (waitingPlayer && sock === waitingPlayer) {
-      sock.emit("matchFail", "Error, can't play against yourself.");
-    } else {
-      waitingPlayer = sock; // may be racing condition
-      waitingPlayerLang = lang;
-      sock.emit("languageSuccess", {"lang":lang, "waiting":true});
-      // TODO: change event to move client to matching screen
     }
   });
+  sock.on("language", function(lang) {
+    _onLanguage(sock, lang);
+  });
+}
+
+function _onLanguage(sock, lang) {
+  //assuming lang is uid
+  //TODO: check if lang is in PanLex
+  /*if language in panlex:
+      continue as normal
+      sock.emit("languageSuccess", {})
+    else:
+      sock.emit("languageFail, {"msg":"Language not found, please enter another."});*/    
+  if (waitingPlayer && sock !== waitingPlayer) { // Make sure waitingPlayer not same as sock
+    sock.emit("languageSuccess", {"lang":lang, "waiting":false});
+    new PasswordGame(waitingPlayer, waitingPlayerLang, sock, lang);
+    waitingPlayer = null;
+    waitingPlayerLang = null;
+  } else if (waitingPlayer && sock === waitingPlayer) {
+    sock.emit("matchFail", "Error, can't play against yourself.");
+  } else {
+    waitingPlayer = sock; // may be racing condition
+    waitingPlayerLang = lang;
+    sock.emit("languageSuccess", {"lang":lang, "waiting":true});
+    // TODO: change event to move client to matching screen
+  }
 }

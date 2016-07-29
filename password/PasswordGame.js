@@ -10,10 +10,10 @@ function PasswordGame(sock1, sock1Lang, sock2, sock2Lang) {
   this.guesser = sock2;
   this.guesserLang = sock2Lang;
   this.password = "";
-  this.translatedPassword = "";
   this.clues = [];
-  this.translatedClues = [];
   this.guesses = [];
+  this.translatedPassword = "";
+  this.translatedClues = [];
   this.translatedGuesses = [];
   this.roundLength = 10;
 
@@ -103,12 +103,12 @@ function _translateExpression(exp, targetLang, cb) {
   panlex.query("/ex", params, cb);
 }
 
-function _checkPanlexError(err, data, cb) {
+function _checkPanlexError(err, data, sock, cb) {
   /* Callback function for panlex queries. Checks if query returned an error.
    * If not, calls cb to continue game. */
   if (err) {
     console.log("Something went wrong with the query");
-    //Ask to resend
+    sock.emit("inputFail", {"data":"Something went wrong, please send your word again."})
   } else {
     cb(data);
   }
@@ -130,7 +130,7 @@ PasswordGame.prototype._onReceivePassword = function(sock, pword) {
         self.translatedPassword = pword;
       } else {
         _translateExpression(pword, this.guesserLang, function(err, data) {
-          _checkPanlexError(err, data, function(data) {
+          _checkPanlexError(err, data, sock, function(data) {
             if (_verifyTranslation(data)) {
               self.translatedPassword = data["result"][0]["tt"];
               console.log(self.translatedPassword);
@@ -163,7 +163,7 @@ PasswordGame.prototype._onReceivePassword = function(sock, pword) {
   if (followsRules) {
     var self = this;
     panlex.query('/ex', params, function(err, data) {
-      _checkPanlexError(err, data, _finishPasswordCheck);
+      _checkPanlexError(err, data, sock, _finishPasswordCheck);
     }); 
   } else {
     var emitData = {
@@ -189,12 +189,19 @@ PasswordGame.prototype._onReceiveClue = function(sock, clue) {
       self.knower.emit("clueSuccess", emitData);
 
       if (self.knowerLang == self.guesserLang) {
-        // don't bother translating
+        self.translatedClues = self.clues;
+        var emitData = {
+          "role": "guesser",
+          "msg":"Clue sent.",
+          "clues": self.translatedClues,
+          "guesses": self.guesses
+        };
+        self.guesser.emit("clueSuccess", emitData);
+      } else {
+        _translateExpression(clue, self.guesserLang, function(err, data) {
+          _checkPanlexError(err, data, sock, _finishClueTranslation);
+        });
       }
-      _translateExpression(clue, self.guesserLang, function(err, data) {
-        _checkPanlexError(err, data, _finishClueTranslation);
-      });
-
     } else {
       emitData = {
         "msg": clue + " was not found in PanLex. Please submit another."
@@ -229,7 +236,7 @@ PasswordGame.prototype._onReceiveClue = function(sock, clue) {
   if (followsRules) {
     var self = this;
     panlex.query('/ex', params, function(err, data) {
-      _checkPanlexError(err, data, _finishClueCheck);
+      _checkPanlexError(err, data, sock, _finishClueCheck);
     }); 
   } else {
     var emitData = {
@@ -262,11 +269,19 @@ PasswordGame.prototype._onReceiveGuess = function(sock, guess) {
         self.guesser.emit("guessSuccess", emitData);
 
         if (self.knowerLang == self.guesserLang) {
-          //don't bother translating
+          self.translatedGuesses = self.guesses;
+          emitData = {
+            "role": "knower",
+            "msg":"Guess sent",
+            "clues": self.clues,
+            "guesses": self.translatedGuesses
+          };
+          self.knower.emit("guessSuccess", emitData);
+        } else {
+          _translateExpression(guess, self.knowerLang, function(err, data) {
+            _checkPanlexError(err, data, sock, _finishGuessTranslation);
+          });
         }
-        _translateExpression(guess, self.knowerLang, function(err, data) {
-          _checkPanlexError(err, data, _finishGuessTranslation);
-        });
       }
     } else {
       emitData = {
@@ -302,7 +317,7 @@ PasswordGame.prototype._onReceiveGuess = function(sock, guess) {
   if (followsRules) {
     var self = this;
     panlex.query('/ex', params, function(err, data) {
-      _checkPanlexError(err, data, _finishGuessCheck);
+      _checkPanlexError(err, data, sock, _finishGuessCheck);
     }); 
   } else {
     var emitData = {
