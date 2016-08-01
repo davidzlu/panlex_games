@@ -1,5 +1,6 @@
 $(document).ready(function() {
-  var panlex = require('panlex');
+  //var socket = io.connect();
+  //var panlex = require('panlex');
   var sourceLanguage = "default language"; // Assigned by user input
   var curScreen = $("#start");
   var role = "guess";
@@ -9,55 +10,49 @@ $(document).ready(function() {
   var input;
   var clue;
   var first = true;
+
   function getPassword(){
       console.log("while loop entered");
-      //panlex.query('/ex',{},function(err,data){});
-
-      //panlex.query('/ex',{uid:sourceLanguage,offset:offset,limit:1},function(err,data){
-      //    console.log("queried!");
+      //panlex.query('/ex',{uid:'eng-000',offset:offset,limit:1},function(err,data){
+         // data.result.forEach(function (ex) {
+              //var wrd = ex.tt;
+             // console.log(offset+": "+wrd);
+              //if(wrd.indexOf(" ")==-1 && wrd.indexOf("\'"==-1)&&wrd.length<10 && (new RegExp('[A-Z]')).test(wrd)==false){
+                      //console.log("just approved: "+wrd);
+                      //password = wrd;
+                      //password_id = ex.ex;
+                      //console.log("final password: "+password);
+                      //stop=true;
+                      //console.log("stop set to "+stop);
+                      //first=true;
+                      //createGuessForm(true);
+              //}else{
+                  //console.log("doesn't meet criteria");
+                  //offset = (offset + 1000)%249000;                     
+                  ////console.log("about to call queryPassword()");
+                  //getPassword();
+              //}
+          //});
       //});
-
-      //console.log("just tested query");
-      panlex.query('/ex',{uid:sourceLanguage,offset:offset,limit:1},function(err,data){
-          console.log("queried!");
-          data.result.forEach(function (ex) {
-              var wrd = ex.tt;
-              console.log(offset+": "+wrd);
-              if(wrd.indexOf(" ")==-1 && wrd.indexOf("\'"==-1)&&wrd.length<10 && (new RegExp('[A-Z]')).test(wrd)==false){
-                      console.log("just approved: "+wrd);
-                      password = wrd;
-                      password_id = ex.ex;
-                      console.log("final password: "+password);
-                      stop=true;
-                      console.log("stop set to "+stop);
-                      first=true;
-                      createGuessForm(true);
-              }else{
-                  console.log("doesn't meet criteria");
-                  offset = (offset + 1000)%249000;                     
-                  //console.log("about to call queryPassword()");
-                  getPassword();
-              }
-          });
-      });
   }
 
   function getClue() {
     // Should retrieve clue from server
-    console.log("behaving as though first=true, actually first="+first);
-    clue = "";
-    console.log("password_id: "+password_id);
-    panlex.query('/ex',{"uid":sourceLanguage,"trex":password_id},function(err,data){
-        console.log("data: "+JSON.stringify(data, null, 4));
-        $("h3").html("<h3>Clue:</h3>");
-        first=false;
-        data.result.forEach(function(trtt){
-            console.log("trtt: "+trtt.tt);
-            clue=clue+", "+ trtt.tt;
-            $("h3").html($("h3").html()+"<font color = \"990000\">"+trtt.tt+", </font>");
-        });
-    });
+    //console.log("behaving as though first=true, actually first="+first);
+    //clue = "";
+    //console.log("password_id: "+password_id);
+   // panlex.query('/ex',{"uid":"eng-000","trex":password_id},function(err,data){
+      //  console.log("data: "+JSON.stringify(data, null, 4));
+       // $("h3").html("<h3>Clue:</h3>");
+      //  first=false;
+       // data.result.forEach(function(trtt){
+         //   console.log("trtt: "+trtt.tt);
+         //   clue=clue+", "+ trtt.tt;
+          //  $("h3").html($("h3").html()+"<font color = \"990000\">"+trtt.tt+", </font>");
+      //  });
+    //});
   }
+
   function star(){
     var starized = "";
     console.log("trying to starize "+password);
@@ -72,7 +67,7 @@ $(document).ready(function() {
     return starized;
   }
 
-  function createFormElement(inputName, formAction) {
+  function createFormElement(inputName, formAction="") {
     /* Helper function for createQuestionElement. Creates an HTML form
        element that accepts text input. */
     var form = $('<form>', { name: "userInput",
@@ -104,14 +99,15 @@ $(document).ready(function() {
       message = $("<h3>That's not the password, try again!</h3>");
       newClueButton = $("<button>Get another clue</button>",{type:"button",name:"newClueButton"});
       callback = displayGuess;
-      var giveUp = $("<button>Forfeit this password</button>", { type:"button", name:"giveUpButton"});
+      var giveUp = $("<button>Forfeit this password</button>", { type:"button", name:"giveUp"});
       giveUp.on("click",forfeited);
     waitScreen.append(message,newClueButton,giveUp);
     newClueButton.on("click", callback);
     return waitScreen;
   }
+
   function createGuessForm(isCallback) {
-  /*creates and returns guessEntry object (for displaying clues and
+  /*creates and returns guessEntry object (for displaying clues and 
     asking for user's guesses)*/
     console.log("in createGuessForm()");
     $("winContainer").remove();
@@ -139,7 +135,7 @@ $(document).ready(function() {
         }else{
             if(first){
                  $("h2").html("Password: "+star());
-                first=true;
+                first=true;      
                 getClue(function(){
                     console.log(clue);
                     clueText = clue;
@@ -155,8 +151,7 @@ $(document).ready(function() {
   }
 
   function createWinScreen() {
-  /*composes winScreen object (to be displayed if user guesses password 
-correctly)*/
+  /*composes winScreen object (to be displayed if user guesses password correctly)*/
     console.log("in createWinScreen()");
     $("#winContainer").remove();
     $("#guessContainer").remove();
@@ -181,6 +176,7 @@ correctly)*/
     againButton.on("click", displayLanguages);
     return loseScreen;
   }
+
   function displayLanguages() {
     /* Handles transition from start screen to language input screen. */
     curScreen.fadeOut(function() {
@@ -192,7 +188,7 @@ correctly)*/
   }
 
   function getUserGuess(){
-  /*gather input for user guesses*/
+  /*gather input for user guesses*/ 
     console.log("trying to set guess from user input");
     guess = $("#guessEntry").children().last().prev().children().first().val();
     console.log("guess: "+guess);
@@ -213,13 +209,13 @@ correctly)*/
           curScreen.append(createGuessForm(false)).fadeIn();
           $("input:text:visible:first").focus();
           break;
-        case "guess":
+        case "guess":        
           console.log("before: "+guess);
           $('button[name=submitButton]').on("click", getUserGuess());
           console.log("after: "+guess);
           if (guess == password) {
             curScreen = $("#win");
-            console.log("WIN! calling createWinScreen");
+            console.log("WIN! calling createWinScreen");         
             curScreen.append(createWinScreen()).fadeIn();
           } else {
             curScreen = $("#matching");
@@ -238,6 +234,7 @@ correctly)*/
       }
     });
   }
+
   function displayEnd() {
     /* Handles transition from translation data input to end screen. */
     curScreen.fadeOut(function() {
@@ -248,13 +245,12 @@ correctly)*/
   }
 
   $("#start button").on("click", displayLanguages);
-  /*if enter key is pressed on the start screen, it is as though the start 
-button
+  /*if enter key is pressed on the start screen, it is as though the start button
     has been pressed*/
   $(document).keypress(function(e){
     if(e.which == 13){
        if($("#start button").is(":visible")){
-         console.log("start button visible!");
+         console.log("start button visible!");         
          $("#start button").focus().click();
        }else if($("input:text").is(":visible")){
          console.log("input text visible!");
@@ -267,9 +263,10 @@ button
        return false;
     }
   });
-  /*collects sourceLanguage from user input and sets footer language
-message*/
 
+  /*collects sourceLanguage from user input and sets footer language 
+message*/
+  
   $("#languages button").mousedown(function(){
     sourceLanguage = $("#sourceLanguage").val();
     $("p:last").text("Playing in "+sourceLanguage);
@@ -285,5 +282,4 @@ message*/
   $("#container").on("click", "button[name=submit]", displayGuess);
   $("#end:last-child").on("click", displayGuess);
 });
-
 

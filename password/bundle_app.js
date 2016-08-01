@@ -30638,7 +30638,6 @@ $(document).ready(function() {
   var input;
   var clue;
   var first = true;
-
   function getPassword(){
       console.log("while loop entered");
       //panlex.query('/ex',{},function(err,data){});
@@ -30688,7 +30687,6 @@ $(document).ready(function() {
         });
     });
   }
-
   function star(){
     var starized = "";
     console.log("trying to starize "+password);
@@ -30735,15 +30733,14 @@ $(document).ready(function() {
       message = $("<h3>That's not the password, try again!</h3>");
       newClueButton = $("<button>Get another clue</button>",{type:"button",name:"newClueButton"});
       callback = displayGuess;
-      var giveUp = $("<button>Forfeit this password</button>", { type:"button", name:"giveUp"});
+      var giveUp = $("<button>Forfeit this password</button>", { type:"button", name:"giveUpButton"});
       giveUp.on("click",forfeited);
     waitScreen.append(message,newClueButton,giveUp);
     newClueButton.on("click", callback);
     return waitScreen;
   }
-
   function createGuessForm(isCallback) {
-  /*creates and returns guessEntry object (for displaying clues and 
+  /*creates and returns guessEntry object (for displaying clues and
     asking for user's guesses)*/
     console.log("in createGuessForm()");
     $("winContainer").remove();
@@ -30771,7 +30768,7 @@ $(document).ready(function() {
         }else{
             if(first){
                  $("h2").html("Password: "+star());
-                first=true;      
+                first=true;
                 getClue(function(){
                     console.log(clue);
                     clueText = clue;
@@ -30787,7 +30784,8 @@ $(document).ready(function() {
   }
 
   function createWinScreen() {
-  /*composes winScreen object (to be displayed if user guesses password correctly)*/
+  /*composes winScreen object (to be displayed if user guesses password 
+correctly)*/
     console.log("in createWinScreen()");
     $("#winContainer").remove();
     $("#guessContainer").remove();
@@ -30812,7 +30810,6 @@ $(document).ready(function() {
     againButton.on("click", displayLanguages);
     return loseScreen;
   }
-
   function displayLanguages() {
     /* Handles transition from start screen to language input screen. */
     curScreen.fadeOut(function() {
@@ -30824,7 +30821,7 @@ $(document).ready(function() {
   }
 
   function getUserGuess(){
-  /*gather input for user guesses*/ 
+  /*gather input for user guesses*/
     console.log("trying to set guess from user input");
     guess = $("#guessEntry").children().last().prev().children().first().val();
     console.log("guess: "+guess);
@@ -30845,13 +30842,13 @@ $(document).ready(function() {
           curScreen.append(createGuessForm(false)).fadeIn();
           $("input:text:visible:first").focus();
           break;
-        case "guess":        
+        case "guess":
           console.log("before: "+guess);
           $('button[name=submitButton]').on("click", getUserGuess());
           console.log("after: "+guess);
           if (guess == password) {
             curScreen = $("#win");
-            console.log("WIN! calling createWinScreen");         
+            console.log("WIN! calling createWinScreen");
             curScreen.append(createWinScreen()).fadeIn();
           } else {
             curScreen = $("#matching");
@@ -30870,7 +30867,6 @@ $(document).ready(function() {
       }
     });
   }
-
   function displayEnd() {
     /* Handles transition from translation data input to end screen. */
     curScreen.fadeOut(function() {
@@ -30881,12 +30877,13 @@ $(document).ready(function() {
   }
 
   $("#start button").on("click", displayLanguages);
-  /*if enter key is pressed on the start screen, it is as though the start button
+  /*if enter key is pressed on the start screen, it is as though the start 
+button
     has been pressed*/
   $(document).keypress(function(e){
     if(e.which == 13){
        if($("#start button").is(":visible")){
-         console.log("start button visible!");         
+         console.log("start button visible!");
          $("#start button").focus().click();
        }else if($("input:text").is(":visible")){
          console.log("input text visible!");
@@ -30899,10 +30896,9 @@ $(document).ready(function() {
        return false;
     }
   });
-
-  /*collects sourceLanguage from user input and sets footer language 
+  /*collects sourceLanguage from user input and sets footer language
 message*/
-  
+
   $("#languages button").mousedown(function(){
     sourceLanguage = $("#sourceLanguage").val();
     $("p:last").text("Playing in "+sourceLanguage);
@@ -30918,6 +30914,8 @@ message*/
   $("#container").on("click", "button[name=submit]", displayGuess);
   $("#end:last-child").on("click", displayGuess);
 });
+
+
 
 },{"panlex":254}],254:[function(require,module,exports){
 (function (process){
