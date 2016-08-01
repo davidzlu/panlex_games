@@ -1,0 +1,43 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'C:\\Program Files\\nodejs\\node.exe',
+1 verbose cli   'C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js',
+1 verbose cli   'install',
+1 verbose cli   '../utils/common' ]
+2 info using npm@2.15.8
+3 info using node@v4.4.7
+4 verbose install initial load of C:\cygwin\home\Grace\package.json
+5 verbose installManyTop reading scoped package data from C:\cygwin\home\Grace\node_modules\browserify\package.json
+6 verbose installManyTop reading scoped package data from C:\cygwin\home\Grace\node_modules\express\package.json
+7 verbose installManyTop reading scoped package data from C:\cygwin\home\Grace\node_modules\node-panlex-master.zip\package.json
+8 verbose installManyTop reading scoped package data from C:\cygwin\home\Grace\node_modules\node.js\package.json
+9 verbose installManyTop reading scoped package data from C:\cygwin\home\Grace\node_modules\panlex\package.json
+10 verbose installManyTop reading scoped package data from C:\cygwin\home\Grace\node_modules\socket.io\package.json
+11 verbose installManyTop reading scoped package data from C:\cygwin\home\Grace\node_modules\utils\package.json
+12 info package.json node.js@0.0.0 No repository field.
+13 info package.json panlex@0.3.1 No license field.
+14 verbose readDependencies loading dependencies from C:\cygwin\home\Grace\package.json
+15 silly cache add args [ '../utils/common', null ]
+16 verbose cache add spec ../utils/common
+17 silly cache add parsed spec Result {
+17 silly cache add   raw: '../utils/common',
+17 silly cache add   scope: null,
+17 silly cache add   name: null,
+17 silly cache add   rawSpec: '../utils/common',
+17 silly cache add   spec: 'C:\\cygwin\\home\\Grace\\game\\panlex_games\\utils\\common',
+17 silly cache add   type: 'local' }
+18 error addLocal Could not install C:\cygwin\home\Grace\game\panlex_games\utils\common
+19 verbose stack Error: ENOENT: no such file or directory, open 'C:\cygwin\home\Grace\game\panlex_games\utils\common'
+19 verbose stack     at Error (native)
+20 verbose cwd C:\cygwin\home\Grace\game\panlex_games\password
+21 error Windows_NT 10.0.10586
+22 error argv "C:\\Program Files\\nodejs\\node.exe" "C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js" "install" "../utils/common"
+23 error node v4.4.7
+24 error npm  v2.15.8
+25 error path C:\cygwin\home\Grace\game\panlex_games\utils\common
+26 error code ENOENT
+27 error errno -4058
+28 error syscall open
+29 error enoent ENOENT: no such file or directory, open 'C:\cygwin\home\Grace\game\panlex_games\utils\common'
+29 error enoent This is most likely not a problem with npm itself
+29 error enoent and is related to npm not being able to find a file.
+30 verbose exit [ -4058, true ]

@@ -12,7 +12,15 @@ $(document).ready(function() {
 
   function getPassword(){
       console.log("while loop entered");
-      panlex.query('/ex',{uid:'eng-000',offset:offset,limit:1},function(err,data){
+      //panlex.query('/ex',{},function(err,data){});
+
+      //panlex.query('/ex',{uid:sourceLanguage,offset:offset,limit:1},function(err,data){
+      //    console.log("queried!");
+      //});
+
+      //console.log("just tested query");
+      panlex.query('/ex',{uid:sourceLanguage,offset:offset,limit:1},function(err,data){
+          console.log("queried!");
           data.result.forEach(function (ex) {
               var wrd = ex.tt;
               console.log(offset+": "+wrd);
@@ -40,7 +48,7 @@ $(document).ready(function() {
     console.log("behaving as though first=true, actually first="+first);
     clue = "";
     console.log("password_id: "+password_id);
-    panlex.query('/ex',{"uid":"eng-000","trex":password_id},function(err,data){
+    panlex.query('/ex',{"uid":sourceLanguage,"trex":password_id},function(err,data){
         console.log("data: "+JSON.stringify(data, null, 4));
         $("h3").html("<h3>Clue:</h3>");
         first=false;
@@ -66,7 +74,7 @@ $(document).ready(function() {
     return starized;
   }
 
-  function createFormElement(inputName, formAction="") {
+  function createFormElement(inputName, formAction) {
     /* Helper function for createQuestionElement. Creates an HTML form
        element that accepts text input. */
     var form = $('<form>', { name: "userInput",
