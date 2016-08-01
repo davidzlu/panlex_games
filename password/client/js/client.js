@@ -190,8 +190,8 @@ $(document).ready(function() {
     var clueElem = $("<div>", {id: "clueElem"});
     var clueFormTitle = $("<h2>Enter a clue</h2>");
     var clueForm = _createFormElement("clue", "clueSubmit");
-    var clueList = _createSubmissionList("clues", "clueList");
-    var guessList = _createSubmissionList("guesses", "guessList");
+    var clueList = _createSubmissionList("clues", "Clues");
+    var guessList = _createSubmissionList("guesses", "Guesses");
     
     clueElem.append(clueFormTitle, clueList, guessList, clueForm);
     return clueElem;
@@ -200,8 +200,8 @@ $(document).ready(function() {
   function createGuessElement() {
     var guessElem = $("<div>", { id: "guessElem"});
     var title = $("<h2>Type in a guess</h2>");
-    var clueList = _createSubmissionList("clues", "clueList");
-    var guessList = _createSubmissionList("guesses", "guessList");
+    var clueList = _createSubmissionList("clues", "Clues");
+    var guessList = _createSubmissionList("guesses", "Guesses");
     var form = _createFormElement("guess", "guessSubmit");
 
     guessElem.append(title, clueList, guessList, form);
@@ -237,12 +237,15 @@ $(document).ready(function() {
   }
 
   function _createSubmissionList(lst, lstname) {
-    var subList = $("<ol>", {id: lstname});
+    var title = $("<ul>");
+    title.append($("<li>"+lstname+"</li>"));
+    var subList = $("<ol>");
     for (var i=0; i<GameState[lst].length; i++) {
       var lstItem = $("<li>"+GameState[lst][i]+"</li>");
       subList.append(lstItem);
     }
-    return subList;
+    title.append(subList);
+    return title;
   }
 
   function displayLanguages() {

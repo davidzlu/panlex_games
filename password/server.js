@@ -45,7 +45,7 @@ function _onLanguage(sock, lang) {
       continue as normal
       sock.emit("languageSuccess", {})
     else:
-      sock.emit("languageFail, {"msg":"Language not found, please enter another."});*/    
+      sock.emit("languageFail, {"msg":"Language not found, please enter another."});*/
   if (waitingPlayer && sock !== waitingPlayer) { // Make sure waitingPlayer not same as sock
     sock.emit("languageSuccess", {"lang":lang, "waiting":false});
     new PasswordGame(waitingPlayer, waitingPlayerLang, sock, lang);
