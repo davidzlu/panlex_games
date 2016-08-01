@@ -120,8 +120,7 @@ function _translateExpression(exp, targetLang, cb) {
     "include": "trq",
     "sort":"trq desc",
     "limit": 1,
-  };
-  console.log(params);
+  };  
 
   panlex.query("/ex", params, cb);
 }
@@ -145,7 +144,6 @@ PasswordGame.prototype._onReceivePassword = function(sock, pword) {
           _checkPanlexError(err, data, sock, function(data) {
             if (_verifyTranslation(data)) {
               self.translatedPassword = data["result"][0]["tt"];
-              console.log(self.translatedPassword);
             } else {
               //can't find translation event
             }
