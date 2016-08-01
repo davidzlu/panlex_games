@@ -30638,33 +30638,71 @@ $(document).ready(function() {
   var input;
   var clue;
   var first = true;
+  var instructions = "";
+  var passwordTrans;
+  var clueTrans;
+
+  function getInstructions(){
+      panlex.query('/ex',{"uid":sourceLanguage,"trtt":"every",limit:1},function(err,data){
+          data.result.forEach(function(trtt){
+              instructions = instructions + trtt.tt;
+              panlex.query('/ex',{"uid":sourceLanguage,"trtt":"clue",limit:1},function(err,data){
+                  data.result.forEach(function(trtt){
+                      instructions = instructions + " " + trtt.tt;
+                      clueTrans = trtt.tt;
+                      panlex.query('/ex',{"uid":sourceLanguage,"trtt":"same",limit:1},function(err,data){
+                          data.result.forEach(function(trtt){
+                              instructions = instructions + " " + trtt.tt;
+                              panlex.query('/ex',{"uid":sourceLanguage,"trtt":"meaning",limit:1},function(err,data){
+                                  data.result.forEach(function(trtt){
+                                      instructions = instructions + " " + trtt.tt;
+                                      panlex.query('/ex',{"uid":sourceLanguage,"trtt":"secret",limit:1},function(err,data){
+                                          data.result.forEach(function(trtt){
+                                              instructions = instructions + " " + trtt.tt;
+                                              passwordTrans = trtt.tt;
+                                              panlex.query('/ex',{"uid":sourceLanguage,"trtt":"word",limit:1},function(err,data){
+                                                  data.result.forEach(function(trtt){
+                                                      instructions = instructions + " " + trtt.tt;
+                                                      passwordTrans = passwordTrans + " " + trtt.tt;
+                                                      panlex.query('/ex',{"uid":sourceLanguage,"trtt":"guess",limit:1},function(err,data){
+                                                          data.result.forEach(function(trtt){
+                                                              instructions = instructions + ".\n " + trtt.tt + " " + passwordTrans+ "?!";
+                                                              console.log("instructions: "+instructions+" passwordTrans: "+passwordTrans);
+                                                          });
+                                                      });
+                                                  });
+                                              });
+                                          });
+                                      });
+                                  });
+                              });
+                          });
+                      });
+                  });
+              });
+          });
+      });
+  }
+
   function getPassword(){
-      console.log("while loop entered");
-      //panlex.query('/ex',{},function(err,data){});
-
-      //panlex.query('/ex',{uid:sourceLanguage,offset:offset,limit:1},function(err,data){
-      //    console.log("queried!");
-      //});
-
-      //console.log("just tested query");
+      //console.log("while loop entered");
       panlex.query('/ex',{uid:sourceLanguage,offset:offset,limit:1},function(err,data){
           console.log("queried!");
           data.result.forEach(function (ex) {
               var wrd = ex.tt;
               console.log(offset+": "+wrd);
-              if(wrd.indexOf(" ")==-1 && wrd.indexOf("\'"==-1)&&wrd.length<10 && (new RegExp('[A-Z]')).test(wrd)==false){
+              if(wrd.indexOf(" ")==-1 && wrd.indexOf("\'"==-1)&&wrd.length<10){// && (new RegExp('[A-Z]')).test(wrd)==false){
                       console.log("just approved: "+wrd);
                       password = wrd;
                       password_id = ex.ex;
                       console.log("final password: "+password);
                       stop=true;
-                      console.log("stop set to "+stop);
+                      //console.log("stop set to "+stop);
                       first=true;
                       createGuessForm(true);
               }else{
-                  console.log("doesn't meet criteria");
-                  offset = (offset + 1000)%249000;                     
-                  //console.log("about to call queryPassword()");
+                  //console.log("doesn't meet criteria");
+                  offset = (offset + 1000)%249000;
                   getPassword();
               }
           });
@@ -30822,9 +30860,9 @@ correctly)*/
 
   function getUserGuess(){
   /*gather input for user guesses*/
-    console.log("trying to set guess from user input");
+    //console.log("trying to set guess from user input");
     guess = $("#guessEntry").children().last().prev().children().first().val();
-    console.log("guess: "+guess);
+    //console.log("guess: "+guess);
   }
 
   function displayGuess() {
@@ -30902,6 +30940,7 @@ message*/
   $("#languages button").mousedown(function(){
     sourceLanguage = $("#sourceLanguage").val();
     $("p:last").text("Playing in "+sourceLanguage);
+    getInstructions();
   });
 
   $("#languages button").on("mouseup", function(){
