@@ -2,16 +2,28 @@
 $(document).ready(function() {
 
   var sock = io();
-  sock.on("matchSuccess", onMatched);
-  sock.on("passwordSuccess", onPasswordSuccess);
-  sock.on("clueSuccess", onClueSuccess);
-  sock.on("guessSuccess", onGuessSuccess);
-  sock.on("inputFail", onInputFail);
-  sock.on("languageSuccess", onLanguageSuccess);
-  sock.on("languageFail", onLanguageFail);
-  sock.on("matchFail", onMessage);
-  sock.on("msg", onMessage);
-  sock.on("endRound", onEndRound);
+  // Event names
+  var MATCH_SUCCESS = "matchSuccess";
+  var MATCH_FAIL = "matchFail";
+  var PASSWORD_SUCCESS = "passwordSuccess";
+  var CLUE_SUCCESS = "clueSuccess";
+  var GUESS_SUCCESS = "guessSuccess";
+  var INPUT_FAIL = "inputFail";
+  var LANGUAGE_SUCCESS = "languageSuccess";
+  var LANGUAGE_FAIL = "languageFail";
+  var MSG = "msg";
+  var END_ROUND = "endRound";
+
+  sock.on(MATCH_SUCCESS, onMatched);
+  sock.on(MATCH_FAIL, onMessage);
+  sock.on(PASSWORD_SUCCESS, onPasswordSuccess);
+  sock.on(CLUE_SUCCESS, onClueSuccess);
+  sock.on(GUESS_SUCCESS, onGuessSuccess);
+  sock.on(INPUT_FAIL, onInputFail);
+  sock.on(LANGUAGE_SUCCESS, onLanguageSuccess);
+  sock.on(LANGUAGE_FAIL, onLanguageFail);
+  sock.on(MSG, onMessage);
+  sock.on(END_ROUND, onEndRound);
 
   function onEndRound(data) {
     var msg = data["msg"];
@@ -180,9 +192,8 @@ $(document).ready(function() {
     var clueForm = _createFormElement("clue", "clueSubmit");
     var clueList = _createSubmissionList("clues", "clueList");
     var guessList = _createSubmissionList("guesses", "guessList");
-    var endButton = _createEndButton();
     
-    clueElem.append(clueFormTitle, clueList, guessList, clueForm, endButton);
+    clueElem.append(clueFormTitle, clueList, guessList, clueForm);
     return clueElem;
   }
 
@@ -192,9 +203,8 @@ $(document).ready(function() {
     var clueList = _createSubmissionList("clues", "clueList");
     var guessList = _createSubmissionList("guesses", "guessList");
     var form = _createFormElement("guess", "guessSubmit");
-    var endButton = _createEndButton();
 
-    guessElem.append(title, clueList, guessList, form, endButton);
+    guessElem.append(title, clueList, guessList, form);
     return guessElem;
   }
 
@@ -208,21 +218,6 @@ $(document).ready(function() {
     }
     waitElem.append(message);
     return waitElem;
-  }
-
-  function createSwapScreen() {
-    $("#swapContainer").remove();
-    var swapScreen = $("<div>", { id: "swapContainer"});
-    var message = $("<p>Switching roles...</p>");//<p>Playing in "+GameState.sourceLanguage+"</p>");
-    var swapButton = $("<button>Switch</button>", { type:"button", name:"swapButton"});
-    if (GameState.role == "password") {
-      GameState.role = "guess";
-    } else if (GameState.role == "guess") {
-      GameState.role = "password";
-    }
-    swapScreen.append(message, swapButton);
-    swapButton.on("click", displayPlayScreen);
-    return swapScreen;
   }
 
   function _createFormElement(inputName, socketEvent) {
@@ -248,16 +243,6 @@ $(document).ready(function() {
       subList.append(lstItem);
     }
     return subList;
-  }
-
-  function _createEndButton() {
-    // endButton should be used for debugging purposes, currently no intention to keep
-    var endButton = $("<button>", {type:"button", name:"endButton", value:"End Round"});
-    $("button[name=endButton]").on("click", function() {
-      if (GameState.guess == GameState.password) {
-        //do something really obvious
-      }
-    });
   }
 
   function displayLanguages() {

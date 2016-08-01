@@ -52,25 +52,47 @@ PasswordGame.prototype._initSockets = function() {
     sock.on("guessSubmit", function(guess) {
       self._onReceiveGuess(self.guesser, guess);
     });
+
+    sock.on("disconnect", function() {
+      for (var j=0; j<self.sockets.length; j++) {
+        self.sockets[j].emit("msg", "Player disconnected, please refresh");
+      }
+    });
   }
 };
 
 // following 3 functions very troublesome for other languages
 PasswordGame.prototype._verifyPassword = function(pword) {
   /* Checks if pword satisfies game rules for passwords. */
-  // check if proper noun somehow?
-  return /^[a-z]+$/.test(pword);
+  return true; //(any expression in PanLex)
+  //return !/^\s+$/.test(pword); (no whitespace in expression)
+  //return /^[a-z]+$/.test(pword);
 };
 
 PasswordGame.prototype._verifyClue = function(clue) {
   /* Checks if clue satisfies game rules for clues. */
-  return /^[a-z]+$/.test(clue) && this.password.indexOf(clue) == -1 && this.clues.indexOf(clue) == -1;
+  return true; //(any expression in PanLex)
+  //return !/^\s+$/.test(pword); (no whitespace in expression)
+  //return /^[a-z]+$/.test(clue) && this.password.indexOf(clue) == -1 && this.clues.indexOf(clue) == -1;
 };
 
 PasswordGame.prototype._verifyGuess = function(guess) {
   /* Checks if guess satisfies game rules for guesses. */
-  return /^[a-z]+$/.test(guess) && this.guesses.indexOf(guess) == -1;
+  return true; //(any expression in PanLex)
+  //return !/^\s+$/.test(pword); (no whitespace in expression)
+  //return /^[a-z]+$/.test(guess) && this.guesses.indexOf(guess) == -1;
 };
+
+function _checkPanlexError(err, data, sock, cb) {
+  /* Callback function for all PanLex queries. Used for checking if query
+   * returned an error. If not, calls cb to continue game. */
+  if (err) {
+    console.log("Something went wrong with the query");
+    sock.emit("inputFail", {"data":"Something went wrong, please send your word again."})
+  } else {
+    cb(data);
+  }
+}
 
 function _verifyExp(plxData, exp) {
   /* Takes in data from a PanLex query and an expression. Returns true
@@ -86,7 +108,7 @@ function _verifyExp(plxData, exp) {
 
 function _verifyTranslation(plxData) {
   /* Verifies that translation query returned by panlex is not empty. */
-  return plxData["result"].length > 0;
+  return plxData["resultNum"] > 0;
 }
 
 function _translateExpression(exp, targetLang, cb) {
@@ -99,19 +121,9 @@ function _translateExpression(exp, targetLang, cb) {
     "sort":"trq desc",
     "limit": 1,
   };
+  console.log(params);
 
   panlex.query("/ex", params, cb);
-}
-
-function _checkPanlexError(err, data, sock, cb) {
-  /* Callback function for panlex queries. Checks if query returned an error.
-   * If not, calls cb to continue game. */
-  if (err) {
-    console.log("Something went wrong with the query");
-    sock.emit("inputFail", {"data":"Something went wrong, please send your word again."})
-  } else {
-    cb(data);
-  }
 }
 
 PasswordGame.prototype._onReceivePassword = function(sock, pword) {
@@ -129,7 +141,7 @@ PasswordGame.prototype._onReceivePassword = function(sock, pword) {
       if (self.knowerLang == self.guesserLang) {
         self.translatedPassword = pword;
       } else {
-        _translateExpression(pword, this.guesserLang, function(err, data) {
+        _translateExpression(pword, self.guesserLang, function(err, data) {
           _checkPanlexError(err, data, sock, function(data) {
             if (_verifyTranslation(data)) {
               self.translatedPassword = data["result"][0]["tt"];
@@ -341,8 +353,11 @@ PasswordGame.prototype._endRound = function(gameWon) {
     guesserMsg = "You ran out of guesses. The password was: "+this.password+". Ending round";
   }
   this.password = "";
+  this.translatedPassword = "";
   this.clues = [];
+  this.translatedClues = [];
   this.guesses = [];
+  this.translatedGuesses = [];
 
   var knowerData = {
     "msg":knowerMsg,
