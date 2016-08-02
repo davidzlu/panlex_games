@@ -1,15 +1,16 @@
-var http = require("http");
+var http = require('http');
 var socketio = require("socket.io");
 var express = require("express");
 
 var app = express();
-var server = http.creatServer(app);
+var server = http.createServer(app);
 var io = socketio(server);
 var PORT = 8000;
 
-app.use(express.static(__dirname + "/client"));
-server.listen(PORT, function() {
-	console.log("Server running at port: " + PORT.toString());
+app.use(express.static(__dirname + '/client'));
+
+server.listen(8000, function() {
+	console.log("Server started on port: "+PORT.toString());
 });
 
 io.on("connection", onConnection);
@@ -28,4 +29,4 @@ function onConnection(sock) {
 function _onLanguage(sock, lang) {
 	/* Handles setting language and sending error messages if language invalid. */
 
-}
+};
