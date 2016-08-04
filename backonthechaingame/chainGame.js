@@ -77,3 +77,5 @@ ChainGame.prototype.resetGame = function() {
 	 * when finished. */
 
 }
+
+module.exports = ChainGame;
