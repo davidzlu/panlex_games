@@ -63,33 +63,29 @@ function _getWords(sock, lang){
 }
 
 function _queryForWord(sock, lang,offset,wrdNumber){
-    panlex.query('/ex',{uid:lang,offset:offset,limit:1},function(err,data){
-        console.log("querying for word"+wrdNumber+" at "+offset);
+    panlex.query('/ex',{uid:lang,offset:offset,limit:1},function(err,data){  //get one random expression from PanLex
         data.result.forEach(function(ex){
-            if(ex.tt.length<12 && ex.tt.indexOf(" ")==-1){
+            if(ex.tt.length<12 && ex.tt.indexOf(" ")==-1){    //if the expression is one word and not too long
                 if(wrdNumber == 1){
                     word1 = ex.tt;
                     console.log(word1);
                     var count = 200000;
+                    /*recalculate offset and recursively call _queryForWord() to find word2 (since word1 was
+                      just successfully found*/
                     offset = Math.floor(count*Math.random()+20000);
                     _queryForWord(sock,lang,offset,2);
                 }else{
-                    if(ex.tt != word1){
+                    if(ex.tt != word1){      //if the candidate for word2 is not the same as word1
                         word2 = ex.tt;
                         console.log(word2);
-                        sock.emit("sendWords",word1,word2);
+                        sock.emit("sendWords",word1,word2);   //send word1 and word2 back to client
                         console.log("just sent words");
-                        //sock.on("askTrans",function(lang) {
-                            //console.log("askTrans event came through");
-                            //_translate(sock, lang);
-                        //});
-                        //socket.on("askTrans",_translate);
-                    }else{
-                        _queryForWord(sock,lang,(offset + 10000)%229000,wrdNumber);
+                    }else{                   //if word2 candidate is same as word1
+                        _queryForWord(sock,lang,(offset + 10000)%229000,wrdNumber);  //try again
                     }
                 }       
-            }else{
-                  _queryForWord(sock,lang,(offset + 10000)%229000,wrdNumber);
+            }else{      //if the expression is too long or consists of multiple words
+                  _queryForWord(sock,lang,(offset + 10000)%229000,wrdNumber);   //try again
             }
         });
     });
