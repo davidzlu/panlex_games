@@ -5,7 +5,7 @@ $(document).ready(function() {
     var curScreen = $("#languageContainer");
     var language;
 
-    socket.on("languageSuccess", showMain);
+    socket.on("languageSuccess", onLanguageSuccess);
     socket.on("languageFail", function(msg) {
         console.log(msg);
         alert(msg);
@@ -27,12 +27,12 @@ $(document).ready(function() {
     });
 
     /*Called when language is in database*/
-    function showMain(msg) {
+    function onLanguageSuccess(msg) {
         console.log(msg);
+        socket.emit("askWords", language);
         curScreen.fadeOut(function() {
-            socket.emit("askWords", language);
             curScreen = $("#gameContainer");
-            curScreen.fadeIn();
+            curScreen.append().fadeIn();
             $("#currentLanguage").text(msg);
         });
     }

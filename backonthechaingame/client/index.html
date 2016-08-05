@@ -14,8 +14,13 @@
         <input type="text" id="selectLanguage" value="eng-000">
         <button name="languageSubmit">Submit</button>
       </div>
-      <div class="screen" id="gameContainer">
+      <div class="screen" id="gameContainer" style="display: none">
         <h2>Here's your challenge:</h2>
+        <input type="text" id="nextWord"></input>
+        <select id="langSelector"></select><!-- How to get languages? -->
+        <div id="synonymContainer"></div>
+        <button name="transSubmit">Submit Translation</button>
+        <button name="loseButton">Give Up</button>
       </div>
       <div class="screen" id="endContainer">
         <h2 id="endMessage"></h2>
