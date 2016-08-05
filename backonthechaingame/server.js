@@ -51,13 +51,15 @@ function _onLanguage(sock, lang) {
         });
 };
 
-var word1, word2;
+var word1, word2;          //global variable workaround, may need changing later
 function _getWords(sock, lang){
-    var count = 230000;
+    var count = 230000;    //hard-coded, corresponds approximately to number of expressions in eng-000 
+           //(will eventually be changed to a query of the PanLex database to find how many expressions exist)
     var offset = Math.floor(count*Math.random()+20000);
     _queryForWord(sock,lang,offset,1);
-    //offset = Math.floor(count*Math.random()+20000);
-    //_queryForWord(sock,lang,offset,2);
+    sock.on("askTrans",function(lang,word1) {        //called when user asks for translations of word1
+        _translate(sock, lang,word1);
+    });
 }
 
 function _queryForWord(sock, lang,offset,wrdNumber){
@@ -77,6 +79,11 @@ function _queryForWord(sock, lang,offset,wrdNumber){
                         console.log(word2);
                         sock.emit("sendWords",word1,word2);
                         console.log("just sent words");
+                        //sock.on("askTrans",function(lang) {
+                            //console.log("askTrans event came through");
+                            //_translate(sock, lang);
+                        //});
+                        //socket.on("askTrans",_translate);
                     }else{
                         _queryForWord(sock,lang,(offset + 10000)%229000,wrdNumber);
                     }
@@ -84,6 +91,19 @@ function _queryForWord(sock, lang,offset,wrdNumber){
             }else{
                   _queryForWord(sock,lang,(offset + 10000)%229000,wrdNumber);
             }
+        });
+    });
+}
+
+/*Finds translations of word1 (in the original user-selected language) into the second user-selected language 
+  (both languages may be the same, in which case synonyms are emitted back to the client instead of 
+  translations*/
+function _translate(sock,lang,word1){
+    console.log("in _translate()");
+    panlex.query('/ex',{"uid":lang,"trtt":word1},function(err,data){
+        data.result.forEach(function(word){
+            console.log(word.tt);
+            sock.emit("singleTrans",word.tt);        //emits translations back to client one at a time
         });
     });
 }
