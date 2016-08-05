@@ -46,4 +46,44 @@ function _onLanguage(sock, lang) {
 			sock.emit("languageFail", "Error, can't find that language.");
 		}
 	});
+        sock.on("askWords",function(lang){
+            _getWords(sock,lang);
+        });
 };
+
+var word1, word2;
+function _getWords(sock, lang){
+    var count = 230000;
+    var offset = Math.floor(count*Math.random()+20000);
+    _queryForWord(sock,lang,offset,1);
+    //offset = Math.floor(count*Math.random()+20000);
+    //_queryForWord(sock,lang,offset,2);
+}
+
+function _queryForWord(sock, lang,offset,wrdNumber){
+    panlex.query('/ex',{uid:lang,offset:offset,limit:1},function(err,data){
+        console.log("querying for word"+wrdNumber+" at "+offset);
+        data.result.forEach(function(ex){
+            if(ex.tt.length<12 && ex.tt.indexOf(" ")==-1){
+                if(wrdNumber == 1){
+                    word1 = ex.tt;
+                    console.log(word1);
+                    var count = 200000;
+                    offset = Math.floor(count*Math.random()+20000);
+                    _queryForWord(sock,lang,offset,2);
+                }else{
+                    if(ex.tt != word1){
+                        word2 = ex.tt;
+                        console.log(word2);
+                        sock.emit("sendWords",word1,word2);
+                        console.log("just sent words");
+                    }else{
+                        _queryForWord(sock,lang,(offset + 10000)%229000,wrdNumber);
+                    }
+                }       
+            }else{
+                  _queryForWord(sock,lang,(offset + 10000)%229000,wrdNumber);
+            }
+        });
+    });
+}
