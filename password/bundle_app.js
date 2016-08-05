@@ -30685,21 +30685,15 @@ $(document).ready(function() {
   }
 
   function getPassword(){
-      //console.log("while loop entered");
+      console.log("while loop entered");
       panlex.query('/ex',{uid:sourceLanguage,offset:offset,limit:1},function(err,data){
           console.log("queried!");
           data.result.forEach(function (ex) {
               var wrd = ex.tt;
               console.log(offset+": "+wrd);
-              if(wrd.indexOf(" ")==-1 && wrd.indexOf("\'"==-1)&&wrd.length<10){// && (new RegExp('[A-Z]')).test(wrd)==false){
-                      console.log("just approved: "+wrd);
-                      password = wrd;
-                      password_id = ex.ex;
-                      console.log("final password: "+password);
-                      stop=true;
-                      //console.log("stop set to "+stop);
-                      first=true;
-                      createGuessForm(true);
+              if(wrd.indexOf(" ")==-1 && wrd.indexOf("\'"==-1)&&wrd.length<13){// && (new RegExp('[A-Z]')).test(wrd)==false){
+                  console.log("about to call getClue");
+                  getClue(wrd,ex.ex);
               }else{
                   //console.log("doesn't meet criteria");
                   offset = (offset + 1000)%249000;
@@ -30709,19 +30703,49 @@ $(document).ready(function() {
       });
   }
 
-  function getClue() {
+  function getClue(wrd,password_id) {
     // Should retrieve clue from server
     console.log("behaving as though first=true, actually first="+first);
     clue = "";
     console.log("password_id: "+password_id);
-    panlex.query('/ex',{"uid":sourceLanguage,"trex":password_id},function(err,data){
-        console.log("data: "+JSON.stringify(data, null, 4));
-        $("h3").html("<h3>Clue:</h3>");
-        first=false;
-        data.result.forEach(function(trtt){
+    panlex.query('/ex',{"uid":sourceLanguage,"trex":password_id},function(err,data,password_id){
+        var counter = 1;
+        var len = data.result.length;
+        console.log("len: "+len);
+                if(len==0){
+                    console.log("found no clues");// for "+toString(password_id)", calling getPassword() again");
+                    var count=230000;
+                    offset = Math.floor(count*Math.random()+20000);
+                    console.log(offset);
+                    var stop = false;
+                    getPassword();
+                }
+        data.result.forEach(function(trtt,password_id){
             console.log("trtt: "+trtt.tt);
             clue=clue+", "+ trtt.tt;
-            $("h3").html($("h3").html()+"<font color = \"990000\">"+trtt.tt+", </font>");
+                if(len==0){
+                    console.log("found no clues");// for "+toString(password_id)", calling getPassword() again");
+                    var count=230000;
+                    offset = Math.floor(count*Math.random()+20000);
+                    console.log(offset);
+                    var stop = false;
+                    getPassword();
+                }else{
+                    if(counter==len){
+                        console.log("approved because clue = "+clue);
+                        console.log("data: "+JSON.stringify(data, null, 4));
+                        $("h3").html("<h3>Clue:</h3>");
+                        first=false;
+                        $("h3").html($("h3").html()+"<font color = \"990000\">"+clue+", </font>");
+                        console.log("just approved: "+wrd);
+                        password = wrd;
+                        console.log("final password: "+password);
+                        stop=true;
+                        //first=true;
+                        createGuessForm(true);
+                    }
+                }
+            counter = counter + 1;
         });
     });
   }
@@ -30784,7 +30808,7 @@ $(document).ready(function() {
     $("winContainer").remove();
     var passText;
     var clueText;
-    console.log("about to call getClue with first="+first);
+    //console.log("about to call getClue with first="+first);
         if(!isCallback){
             $("winContainer").remove();
             $("#guessEntry").remove();
@@ -30807,10 +30831,10 @@ $(document).ready(function() {
             if(first){
                  $("h2").html("Password: "+star());
                 first=true;
-                getClue(function(){
-                    console.log(clue);
-                    clueText = clue;
-                });
+                //getClue(function(){
+                  //  console.log(clue);
+                    //clueText = clue;
+                //});
             }
         }
     var title2 = $("<p>Type in a guess:</p>");
