@@ -9,7 +9,7 @@ $(document).ready(function(){
 
    /*When the button on the first screen is clicked, send language 
      selection to server and show second screen*/
-    $(":button").on("click",function(){
+    $("button[name=next]").on("click",function(){
         console.log("button clicked");
         language = $("#selectLanguage").val();
         console.log("language: "+language);
@@ -26,23 +26,19 @@ $(document).ready(function(){
         console.log(msg);
         curScreen.fadeOut(function(){
             curScreen = $("#secondContainer");
-            mainSetup();
+            socket.emit("askWords",language);
             curScreen.fadeIn();
             $('#currentLanguage').text(msg);
-        socket.on("sendWords", function(word1,word2){
-            console.log("received "+word1+" and "+word2);
-            curScreen.append("<h3>Can you get from "+word1+" to "+word2+" using a chain of translations/synonyms?</h3>");
+            socket.on("sendWords", function(word1,word2){
+                console.log("received "+word1+" and "+word2);
+                curScreen.append("<h3>Can you get from <font color=\"FF0000\">"+word1+"</font> to <font color=\"FF0000\">"+word2+"</font> using a chain of translations/synonyms?</h3>");
+                curScreen.append("Choose a language in which to list PanLex's translations/synonyms of <font color=\"FF0000\">"+word1+"</font>: <br>");
+                curScreen.append($("<input>", {type:"text", id:"selectSecondaryLang", value:"eng-000"}));
+                var translationButton = $("<button>",{ type:"button", name:"seeTrans",text:"Show translations"});
+                translationButton.on("click",socket.emit("askTrans",$("#selectSecondaryLang").val()));  //ERROR; fix!
+                curScreen.append(translationButton);
+            });
         });
-
-        });
-        //$('footer').append(msg);
-    }
-
-    function mainSetup(){
-        socket.emit("askWords", language);
-       // socket.on("sendWords", function(word1,word2){
-         //   curScreen.append("Can you get from "+word1+" to "+word2+" using a chain of translations/synonyms?");
-       // });
     }
 
     /*Socket event handling*/
