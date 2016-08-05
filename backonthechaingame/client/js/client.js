@@ -2,9 +2,9 @@ var socket = io.connect("http://127.0.0.1:8000");
 console.log("outside jQuery");
 	socket.on('connect', (socket) => {
         console.log("connected!");
-		socket.write("stuff");
+		//socket.write("stuff");
     });
-	socket.on('message', function(msg,err){
+	socket.on('msg', function(msg,err){
 		if(err){
 			console.log(err);
 		}
