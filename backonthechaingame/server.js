@@ -15,6 +15,7 @@ server.listen(8000, function() {
 });
 
 io.on("connection", onConnection);
+//io.on("langMsg", _onLanguage);
 
 function onConnection(sock) {
 	/* Parameters:
@@ -36,9 +37,10 @@ function _onLanguage(sock, lang) {
 	 *   lang: the uid string the player has chosen
 	 * Handles setting language, starting game, and sending error
 	 * messages if language invalid. */
+        console.log("about to check if "+lang+" is valid.");
 	panlex.query("/lv", {"uid":lang}, function(err, data) {
 		if (data.resultNum > 0) {
-			sock.emit("languageSuccess", lang);
+			sock.emit("languageSuccess", "Playing in "+lang);
 			new ChainGame(sock, lang);
 		} else {
 			sock.emit("languageFail", "Error, can't find that language.");

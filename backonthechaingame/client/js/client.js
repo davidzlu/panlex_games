@@ -10,6 +10,12 @@ console.log("outside jQuery");
 		}
 		console.log(msg);
 	});
+      socket.on("languageSuccess",function(msg,err){
+          console.log(msg);
+      });
+      socket.on("languageFail",function(msg,err){
+          console.log(msg);
+      });
 $(document).ready(function(){
     //var io = require('socket.io');
     
@@ -21,6 +27,7 @@ $(document).ready(function(){
         console.log("button clicked");
 		var language = $("#selectLanguage").val();
 		console.log("language: "+language);
+                socket.emit('languageSubmit',language);
         curScreen.fadeOut(function(){
             curScreen = $("#secondContainer");
             curScreen.fadeIn();
