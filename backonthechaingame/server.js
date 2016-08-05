@@ -21,6 +21,7 @@ function onConnection(sock) {
 	 * 2) set up listener for language selection */
 	
 	sock.emit("msg", "Hello you are playing ___");
+	console.log("just sent message");
 	sock.on("languageSubmit", function(lang) {
 		_onLanguage(sock, lang);
 	});
