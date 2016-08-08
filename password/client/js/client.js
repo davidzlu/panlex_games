@@ -65,9 +65,8 @@ $(document).ready(function() {
   function onMessage(text) {
     /* Function for displaying messages in title. For debugging purposes.
      * Don"t keep in final game. Or at least modify heavily. */
-    var title = $("#title");
-    var msg = $("<h2>" + text + "</h2>");
-    title.append(msg);
+    var msg = $("<p>" + text + "</p>");
+    $("#msgContainer").append(msg);
   }
 
   function onPasswordSuccess(data) {
