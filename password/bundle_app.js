@@ -30641,6 +30641,7 @@ $(document).ready(function() {
   var instructions = "";
   var passwordTrans;
   var clueTrans;
+  var revealLetter = 0;
 
   function getInstructions(){
       panlex.query('/ex',{"uid":sourceLanguage,"trtt":"every",limit:1},function(err,data){
@@ -30722,7 +30723,7 @@ $(document).ready(function() {
                 }
         data.result.forEach(function(trtt,password_id){
             console.log("trtt: "+trtt.tt);
-            clue=clue+", "+ trtt.tt;
+            clue=trtt.tt+", "+clue;
                 if(len==0){
                     console.log("found no clues");// for "+toString(password_id)", calling getPassword() again");
                     var count=230000;
@@ -30735,13 +30736,13 @@ $(document).ready(function() {
                         console.log("approved because clue = "+clue);
                         console.log("data: "+JSON.stringify(data, null, 4));
                         $("h3").html("<h3>Clue:</h3>");
-                        first=false;
+                        //first=false;
                         $("h3").html($("h3").html()+"<font color = \"990000\">"+clue+", </font>");
                         console.log("just approved: "+wrd);
                         password = wrd;
                         console.log("final password: "+password);
                         stop=true;
-                        //first=true;
+                        first=true;
                         createGuessForm(true);
                     }
                 }
@@ -30753,8 +30754,10 @@ $(document).ready(function() {
     var starized = "";
     console.log("trying to starize "+password);
     if(password!=null){
-        starized = starized + password[0];
-        for(var i = 1; i < password.length; i++){
+        for(var j = 0; j < revealLetter; j++){
+            starized = starized + password[j];
+        }
+        for(var i = revealLetter; i < password.length; i++){
           starized = starized + "*";
         }
     }else{
@@ -30795,6 +30798,8 @@ $(document).ready(function() {
       message = $("<h3>That's not the password, try again!</h3>");
       newClueButton = $("<button>Get another clue</button>",{type:"button",name:"newClueButton"});
       callback = displayGuess;
+      first=false;
+      revealLetter = revealLetter + 1;
       var giveUp = $("<button>Forfeit this password</button>", { type:"button", name:"giveUpButton"});
       giveUp.on("click",forfeited);
     waitScreen.append(message,newClueButton,giveUp);
@@ -30804,7 +30809,7 @@ $(document).ready(function() {
   function createGuessForm(isCallback) {
   /*creates and returns guessEntry object (for displaying clues and
     asking for user's guesses)*/
-    console.log("in createGuessForm()");
+    console.log("in createGuessForm() with first="+first+", isCallback="+isCallback);
     $("winContainer").remove();
     var passText;
     var clueText;
@@ -30853,7 +30858,10 @@ correctly)*/
     $("#guessContainer").remove();
     $("#guessEntry").remove();
     var winScreen = $("<div>",{id:"winContainer"});
-    var message = $("<h2>Congratulations, you won!</h2><p>Thank you for playing.</p>");
+    first=true;
+    var score = Math.ceil(((password.length - revealLetter)/password.length)*10);
+    console.log((password.length - revealLetter)/password.length);
+    var message = $("<h2>Congratulations, you won!</h2><h3>Your score: <font color= \"990000\">"+score+"</font> points out of 10</h2><p>Thank you for playing.</p>");
     var againButton = $("<button>Play Again!</button>", { type:"button", name:"againButton"});
     winScreen.append(message, againButton);
     againButton.on("click", displayLanguages);
@@ -30876,6 +30884,7 @@ correctly)*/
     /* Handles transition from start screen to language input screen. */
     curScreen.fadeOut(function() {
       first=true;
+      revealLetter = 0;
       curScreen = $("#languages");
       curScreen.fadeIn();
       $("input:text:visible:first").focus();
