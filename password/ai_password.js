@@ -13,8 +13,37 @@ $(document).ready(function() {
   var passwordTrans;
   var clueTrans;
   var revealLetter = 0;
+  var winMessage;
+  var thankyou;
+  var incorrectMess;
+  var loseMessage;
+  var luckMessage;
+  var playingIn;
 
   function getInstructions(){
+      if(sourceLanguage=="eng-000"){
+          playingIn="Playing in eng-000";
+          $("p:last").text(playingIn);
+      }else{
+          panlex.query('/ex',{"uid":sourceLanguage,"trtt":"play",limit:1},function(err,data){
+            data.result.forEach(function(trtt){
+              playingIn = trtt.tt+" ";
+              panlex.query('/ex',{"uid":sourceLanguage,"trtt":"use",limit:1},function(err,data){
+                data.result.forEach(function(trtt){
+                  playingIn = playingIn+trtt.tt+" "+sourceLanguage;
+                  $("p:last").text(playingIn);
+                });
+              });
+            });
+          });
+      }
+    instructions = "";
+    if(sourceLanguage == "eng-000"){
+      instructions = "every clue same meaning secret word.\nguess secret word?!";
+      passwordTrans = "secret word";
+      $("#title p").text(instructions);
+      getWinExpr();
+    }else{
       panlex.query('/ex',{"uid":sourceLanguage,"trtt":"every",limit:1},function(err,data){
           data.result.forEach(function(trtt){
               instructions = instructions + trtt.tt;
@@ -22,13 +51,13 @@ $(document).ready(function() {
                   data.result.forEach(function(trtt){
                       instructions = instructions + " " + trtt.tt;
                       clueTrans = trtt.tt;
-                      panlex.query('/ex',{"uid":sourceLanguage,"trtt":"same",limit:1},function(err,data){
+                      panlex.query('/ex',{"uid":sourceLanguage,"trtt":"equal",limit:1},function(err,data){
                           data.result.forEach(function(trtt){
                               instructions = instructions + " " + trtt.tt;
                               panlex.query('/ex',{"uid":sourceLanguage,"trtt":"meaning",limit:1},function(err,data){
                                   data.result.forEach(function(trtt){
                                       instructions = instructions + " " + trtt.tt;
-                                      panlex.query('/ex',{"uid":sourceLanguage,"trtt":"secret",limit:1},function(err,data){
+                                      	panlex.query('/ex',{"uid":sourceLanguage,"trtt":"unknown",limit:1},function(err,data){
                                           data.result.forEach(function(trtt){
                                               instructions = instructions + " " + trtt.tt;
                                               passwordTrans = trtt.tt;
@@ -40,6 +69,9 @@ $(document).ready(function() {
                                                           data.result.forEach(function(trtt){
                                                               instructions = instructions + ".\n " + trtt.tt + " " + passwordTrans+ "?!";
                                                               console.log("instructions: "+instructions+" passwordTrans: "+passwordTrans);
+                                                              $("#title p").text(instructions);
+                                                              //$("#guessEntry h2").text(passwordTrans);
+                                                              getWinExpr();
                                                           });
                                                       });
                                                   });
@@ -54,20 +86,79 @@ $(document).ready(function() {
               });
           });
       });
+    }
+  }
+
+  function getWinExpr(){
+      if(sourceLanguage=="eng-000"){
+          winMessage="Congratulations, you won!";
+      }else{
+          panlex.query('/ex',{"uid":sourceLanguage,"trtt":"congratulations",limit:1},function(err,data){
+            data.result.forEach(function(trtt){
+              winMessage = trtt.tt+", ";
+              panlex.query('/ex',{"uid":sourceLanguage,"trtt":"win",limit:1},function(err,data){
+                data.result.forEach(function(trtt){
+                  winMessage = winMessage+trtt.tt+"!";
+                });
+              });   
+            });
+          });
+      }
+      if(sourceLanguage=="eng-000"){
+          thankyou="Thank you for playing.";
+      }else{
+          panlex.query('/ex',{"uid":sourceLanguage,"trtt":"thank you",limit:1},function(err,data){
+            data.result.forEach(function(trtt){
+              thankyou = trtt.tt+".";
+            });
+          });
+      }
+      if(sourceLanguage=="eng-000"){
+          incorrectMess="That's not the password, try again!";
+      }else{
+          panlex.query('/ex',{"uid":sourceLanguage,"trtt":"no",limit:1},function(err,data){
+            data.result.forEach(function(trtt){
+              console.log("passwordTrans: "+passwordTrans);
+              incorrectMess = trtt.tt+" "+passwordTrans+".";
+            });
+          });
+      }
+      if(sourceLanguage=="eng-000"){
+          loseMessage="The password was ";
+          luckMessage=". Better luck next time!";
+      }else{
+          panlex.query('/ex',{"uid":sourceLanguage,"trtt":"before",limit:1},function(err,data){
+            data.result.forEach(function(trtt){
+              loseMessage = trtt.tt+" "+passwordTrans+": ";
+              panlex.query('/ex',{"uid":sourceLanguage,"trtt":"next",limit:1},function(err,data){
+                data.result.forEach(function(trtt){
+                  luckMessage = trtt.tt;
+                  panlex.query('/ex',{"uid":sourceLanguage,"trtt":"good",limit:1},function(err,data){
+                      data.result.forEach(function(trtt){
+                        luckMessage = luckMessage + " "+trtt.tt;
+                        panlex.query('/ex',{"uid":sourceLanguage,"trtt":"luck",limit:1},function(err,data){
+                          data.result.forEach(function(trtt){
+                              luckMessage = luckMessage + " "+trtt.tt+"!";
+                          });
+                        });
+                      });
+                  });
+                });
+              });
+            });
+          });
+      }
+
   }
 
   function getPassword(){
-      console.log("while loop entered");
       panlex.query('/ex',{uid:sourceLanguage,offset:offset,limit:1},function(err,data){
-          console.log("queried!");
           data.result.forEach(function (ex) {
               var wrd = ex.tt;
               console.log(offset+": "+wrd);
               if(wrd.indexOf(" ")==-1 && wrd.indexOf("\'"==-1)&&wrd.length<13){// && (new RegExp('[A-Z]')).test(wrd)==false){
-                  console.log("about to call getClue");
                   getClue(wrd,ex.ex);
               }else{
-                  //console.log("doesn't meet criteria");
                   offset = (offset + 1000)%249000;
                   getPassword();
               }
@@ -77,15 +168,12 @@ $(document).ready(function() {
 
   function getClue(wrd,password_id) {
     // Should retrieve clue from server
-    console.log("behaving as though first=true, actually first="+first);
     clue = "";
-    console.log("password_id: "+password_id);
     panlex.query('/ex',{"uid":sourceLanguage,"trex":password_id},function(err,data,password_id){
         var counter = 1;
         var len = data.result.length;
         console.log("len: "+len);
                 if(len==0){
-                    console.log("found no clues");// for "+toString(password_id)", calling getPassword() again");
                     var count=230000;
                     offset = Math.floor(count*Math.random()+20000);
                     console.log(offset);
@@ -96,7 +184,6 @@ $(document).ready(function() {
             console.log("trtt: "+trtt.tt);
             clue=trtt.tt+", "+clue;
                 if(len==0){
-                    console.log("found no clues");// for "+toString(password_id)", calling getPassword() again");
                     var count=230000;
                     offset = Math.floor(count*Math.random()+20000);
                     console.log(offset);
@@ -104,12 +191,8 @@ $(document).ready(function() {
                     getPassword();
                 }else{
                     if(counter==len){
-                        console.log("approved because clue = "+clue);
-                        console.log("data: "+JSON.stringify(data, null, 4));
                         $("h3").html("<h3>Clue:</h3>");
-                        //first=false;
                         $("h3").html($("h3").html()+"<font color = \"990000\">"+clue+", </font>");
-                        console.log("just approved: "+wrd);
                         password = wrd;
                         console.log("final password: "+password);
                         stop=true;
@@ -162,11 +245,10 @@ $(document).ready(function() {
   }
   function createWaitScreen() {
   /*creates screen to be displayed when user submits incorrect guess*/
-    console.log("in createWaitScreen()");
     $("#wait").remove();
     var waitScreen = $('<div>', { id: "wait"});
     var message, callback, newClueButton;
-      message = $("<h3>That's not the password, try again!</h3>");
+      message = $("<h3>"+incorrectMess+"</h3>");
       newClueButton = $("<button>Get another clue</button>",{type:"button",name:"newClueButton"});
       callback = displayGuess;
       first=false;
@@ -180,11 +262,9 @@ $(document).ready(function() {
   function createGuessForm(isCallback) {
   /*creates and returns guessEntry object (for displaying clues and
     asking for user's guesses)*/
-    console.log("in createGuessForm() with first="+first+", isCallback="+isCallback);
     $("winContainer").remove();
     var passText;
     var clueText;
-    //console.log("about to call getClue with first="+first);
         if(!isCallback){
             $("winContainer").remove();
             $("#guessEntry").remove();
@@ -195,22 +275,17 @@ $(document).ready(function() {
                 offset = Math.floor(count*Math.random()+20000);
                 console.log(offset);
                 var stop = false;
-                getPassword();//function(){
-                console.log("after calling getPassword");
-                passText =  $("<h2>Password: loading...</h2>");
+                getPassword();
+                passText =  $("<h2>"+passwordTrans+" loading...</h2>");
                 clueText = $("<h3>Clue: <font color = \"990000\">loading...</font></h3>");
             }else{
-                passText =  $("<h2>Password: "+star()+"</h2>");
+                passText =  $("<h2>"+passwordTrans+": "+star()+"</h2>");
                 clueText = $("<h3>Clue: <font color = \"990000\">"+clue+"</font></h3>");
             }
         }else{
             if(first){
-                 $("h2").html("Password: "+star());
+                 $("h2").html(passwordTrans+": "+star());
                 first=true;
-                //getClue(function(){
-                  //  console.log(clue);
-                    //clueText = clue;
-                //});
             }
         }
     var title2 = $("<p>Type in a guess:</p>");
@@ -224,15 +299,14 @@ $(document).ready(function() {
   function createWinScreen() {
   /*composes winScreen object (to be displayed if user guesses password 
 correctly)*/
-    console.log("in createWinScreen()");
     $("#winContainer").remove();
     $("#guessContainer").remove();
     $("#guessEntry").remove();
     var winScreen = $("<div>",{id:"winContainer"});
     first=true;
     var score = Math.ceil(((password.length - revealLetter)/password.length)*10);
-    console.log((password.length - revealLetter)/password.length);
-    var message = $("<h2>Congratulations, you won!</h2><h3>Your score: <font color= \"990000\">"+score+"</font> points out of 10</h2><p>Thank you for playing.</p>");
+    console.log("winMessage before adding: "+winMessage);
+    var message = $("<h2>"+winMessage+"</h2><h3>Your score: <font color= \"990000\">"+score+"</font> points out of 10</h2><p>"+thankyou+"</p>");
     var againButton = $("<button>Play Again!</button>", { type:"button", name:"againButton"});
     winScreen.append(message, againButton);
     againButton.on("click", displayLanguages);
@@ -241,11 +315,10 @@ correctly)*/
 
   function createLoseScreen(){
   /*composes loseScreen object (to be displayed if user forfeits password)*/
-    console.log("in createLoseScreen()");
     $("#loseContainer").remove();
     var loseScreen = $("<div>",{id:"loseContainer"});
-    var message = $("<h2>The password was <font color=\"990000\">"+password+"</font>. Better luck next time!</h2>");
-    var thank = $("<h4>Thank you for playing.</h4>");
+    var message = $("<h2>"+loseMessage+"<font color=\"990000\">"+password+"</font>. "+luckMessage+"</h2>");
+    var thank = $("<h4>"+thankyou+"</h4>");
     var againButton = $("<button>Play Again!</button>", { type:"button", name:"againButton"});
     loseScreen.append(message, thank, againButton);
     againButton.on("click", displayLanguages);
@@ -256,6 +329,7 @@ correctly)*/
     curScreen.fadeOut(function() {
       first=true;
       revealLetter = 0;
+      //$("#title p").text(instructions);
       curScreen = $("#languages");
       curScreen.fadeIn();
       $("input:text:visible:first").focus();
@@ -264,9 +338,7 @@ correctly)*/
 
   function getUserGuess(){
   /*gather input for user guesses*/
-    //console.log("trying to set guess from user input");
     guess = $("#guessEntry").children().last().prev().children().first().val();
-    //console.log("guess: "+guess);
   }
 
   function displayGuess() {
@@ -285,9 +357,7 @@ correctly)*/
           $("input:text:visible:first").focus();
           break;
         case "guess":
-          console.log("before: "+guess);
           $('button[name=submitButton]').on("click", getUserGuess());
-          console.log("after: "+guess);
           if (guess == password) {
             curScreen = $("#win");
             console.log("WIN! calling createWinScreen");
@@ -299,7 +369,6 @@ correctly)*/
           break;
         case "feedback":
           curScreen = $("#lose")
-          console.log("in feedback case");
           curScreen.append(createLoseScreen()).fadeIn();
           break;
         default:
@@ -325,13 +394,9 @@ button
   $(document).keypress(function(e){
     if(e.which == 13){
        if($("#start button").is(":visible")){
-         console.log("start button visible!");
          $("#start button").focus().click();
        }else if($("input:text").is(":visible")){
-         console.log("input text visible!");
          displayGuess();
-         //curScreen.submit();
-         //$("#button[name=next]").focus().click();
        }else{
          console.log("neither visible!");
        }
@@ -343,7 +408,7 @@ message*/
 
   $("#languages button").mousedown(function(){
     sourceLanguage = $("#sourceLanguage").val();
-    $("p:last").text("Playing in "+sourceLanguage);
+    //$("p:last").text("Playing in "+sourceLanguage);
     getInstructions();
   });
 
