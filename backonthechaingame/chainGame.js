@@ -10,6 +10,7 @@ var ASK_WORDS = "askWords";
 var SEND_WORDS = "sendWords";
 var TRANS_LIST = "transList";
 var RESET = "reset";
+var VALID_LANGUAGES = "validLanguages";
 
 function ChainGame(sock, lang) {
     /* Constructor function for creating an instance of the game. */
@@ -17,10 +18,12 @@ function ChainGame(sock, lang) {
     this.playerLang = lang;
     this.currentWord = {
         tt:"",
+        ex:0,
         uid:"",
     };
     this.targetWord = {
         tt:"",
+        ex:0,
         uid:"",
     };
     this.initSocket(sock);
@@ -62,6 +65,7 @@ ChainGame.prototype._queryForWord = function(sock, lang, offset, wrdNumber) {
         data.result.forEach(function(ex) {
             if (wrdNumber == 1) {
                 self.currentWord.tt = ex.tt;
+                self.currentWord.ex = ex.ex
                 self.currentWord.uid = lang;
                 console.log(self.currentWord);
                 var count = 200000;
@@ -72,6 +76,7 @@ ChainGame.prototype._queryForWord = function(sock, lang, offset, wrdNumber) {
             } else {
                 if (ex.tt != self.currentWord.tt) { //if the candidate for word2 is not the same as word1
                     self.targetWord.tt = ex.tt;
+                    self.targetWord.ex = ex.ex;
                     self.targetWord.uid = lang;
                     console.log(self.targetWord);
                     sock.emit(SEND_WORDS, self.currentWord.tt, self.targetWord.tt);   //send word1 and word2 back to client
@@ -130,10 +135,30 @@ ChainGame.prototype.isWinState = function() {
 }
 
 ChainGame.prototype.resetGame = function() {
-    /* Resets instance variables to those at beginning of game. Emits a confirmation
-     * when finished. */
+    /* Resets state of game. */
     this.getWords();
     console.log("Reset game");
+}
+
+ChainGame.prototype.getLanguageVarieties = function(exp) {
+	/* Parameter:
+	 *   exp: a string of the expression to be translated
+	 * Returns:
+	 *   an array of uid strings
+	 * Gets uids of language varieties that have exp as a translation of
+	 * some expression in the language variety. */
+
+	var params = {
+		trex: this.currentWord.ex,
+	};
+	var self = this;
+	panlex.query("/lv", params, function(err, data) {
+		var lvList = [];
+		for (var i=0; i<data.resultNum; i++) {
+			lvList.push(data.result[i].uid);
+		}
+		self.player.emit(VALID_LANGUAGES, lvList);
+	});
 }
 
 module.exports = ChainGame;

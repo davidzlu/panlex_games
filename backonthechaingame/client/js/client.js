@@ -1,4 +1,4 @@
-var socket = io.connect("http://127.0.0.1:8000");
+var sock = io.connect("http://127.0.0.1:8000");
 
 $(document).ready(function() {
     
@@ -18,37 +18,39 @@ $(document).ready(function() {
     var WIN = "win";
     var LOSE = "lose";
     var RESET = "reset";
+    var VALID_LANGUAGES = "validLanguages";
 
-    //Socket event listeners
-    socket.on(LANG_SUCCESS, onLanguageSuccess);
-    socket.on(LANG_FAIL, onLanguageFail);
-    socket.on(SEND_WORDS, onReceiveWords);
-    socket.on(TRANS_LIST, onReceiveTranslation);
-    socket.on(WIN, onWin);
+    //sock event listeners
+    sock.on(LANG_SUCCESS, onLanguageSuccess);
+    sock.on(LANG_FAIL, onLanguageFail);
+    sock.on(SEND_WORDS, onReceiveWords);
+    sock.on(TRANS_LIST, onReceiveTranslation);
+    sock.on(WIN, onWin);
+    sock.on(VALID_LANGUAGES, onLanguageList);
 
     //DOM event listeners
     $("#languageSubmit").on("click", function() {
         language = $("#selectLanguage").val();
         console.log("language: "+language);
-        socket.emit("languageSubmit", language);
+        sock.emit("languageSubmit", language);
     });
     $("#transSubmit").on("click", sendWord);
     $("#loseButton").on("click", forfeit);
     $("#resetButton").on("click", function() {
-        socket.emit(RESET);
+        sock.emit(RESET);
         curScreen.fadeOut();
         curScreen = $("#gameContainer");
     });
     $("#seeTrans").on("click", function() {
         console.log("translation button clicked, asking server for translations");
         secondaryLang = $("#selectSecondaryLang").val();
-        socket.emit(ASK_TRANS, secondaryLang, curWord);  //asks server for a translation of word1
+        sock.emit(ASK_TRANS, secondaryLang, curWord);  //asks server for a translation of word1
     });
 
     /*Called when language is in database*/
     function onLanguageSuccess(msg) {
         console.log(msg);
-        socket.emit(ASK_WORDS, language);
+        sock.emit(ASK_WORDS, language);
         curScreen.fadeOut();
         curScreen = $("#gameContainer");
         $("#currentLanguage").text(msg);
@@ -82,7 +84,7 @@ $(document).ready(function() {
         var word = $("#synonymContainer").val();
         if (word !== null) {
             $("#synonymContainer").empty();
-            socket.emit(SET_WORD, word, secondaryLang);
+            sock.emit(SET_WORD, word, secondaryLang);
             curWord = word;
             $("#gameContainer h3").replaceWith($("<h3>Can you get from <font color=\"FF0000\">"+curWord+"</font> to <font color=\"FF0000\">"+targetWord+"</font> using a chain of translations/synonyms?</h3>"));
         } else {
@@ -104,5 +106,13 @@ $(document).ready(function() {
             $("#endMessage").text("You lose!");
             curScreen.fadeIn();
         });
+    }
+
+    function onLanguageList(lvList) {
+        $("#selectSecondaryLang").empty();
+        for (var i=0; i<lvList.length; i++) {
+            var langOption = $("<option>"+lvList[i]+"</option>");
+            $("#selectSecondaryLang").append(langOption);
+        }
     }
 });
