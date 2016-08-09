@@ -1,8 +1,14 @@
 var panlex = require("panlex");
 panlex.setUserAgent("Chain Game", "0.0");
 
-//Event names
+var DEBUG = true;
 
+//Event names
+var SET_WORD = "setWord";
+var ASK_TRANS = "askTrans";
+var ASK_WORDS = "askWords";
+var SEND_WORDS = "sendWords";
+var TRANS_LIST = "transList";
 
 function ChainGame(sock, lang) {
     /* Constructor function for creating an instance of the game. */
@@ -16,20 +22,29 @@ function ChainGame(sock, lang) {
         tt:"",
         uid:"",
     };
-    this.translations = [];
-    this.forfeited = false;
     this.initSocket(sock);
 }
 
 ChainGame.prototype.initSocket = function(sock) {
     /* Sets up event listeners for socket */
     var self = this;
-    sock.on("askWords", function(lang) {
-        self.getWords(sock, lang);
+    sock.on(ASK_WORDS, function(lang) {
+    	if (DEBUG) {
+    		self.currentWord = {tt:"ship", uid:"eng-000"};
+    		self.targetWord = {tt:"sun", uid:"eng-000"};
+    		sock.emit(SEND_WORDS, self.currentWord.tt, self.targetWord.tt);
+    	} else {
+    		self.getWords(sock, lang);
+    	}
+        
     });
-    sock.on("askTrans", function(lang) { //called when user asks for translations of word1
+    sock.on(ASK_TRANS, function(lang) { //called when user asks for translations of word1
         self.getTranslations(lang);
     });
+    sock.on(SET_WORD, function(exp, lang) {
+    	self.setCurrentWord(exp, lang);
+    });
+
 
 }
 
@@ -58,7 +73,7 @@ ChainGame.prototype._queryForWord = function(sock, lang, offset, wrdNumber) {
                     self.targetWord.tt = ex.tt;
                     self.targetWord.uid = lang;
                     console.log(self.targetWord);
-                    sock.emit("sendWords", self.currentWord.tt, self.targetWord.tt);   //send word1 and word2 back to client
+                    sock.emit(SEND_WORDS, self.currentWord.tt, self.targetWord.tt);   //send word1 and word2 back to client
                     console.log("just sent words");
                 } else { //if word2 candidate is same as word1
                     self._queryForWord(sock, lang, (offset + 10000)%229000, wrdNumber);  //try again
@@ -82,31 +97,26 @@ ChainGame.prototype.getTranslations = function(targetLang) {
   	var self = this;
     console.log("in getTranslations()");
     panlex.query('/ex', {"uid":targetLang, "trtt":this.currentWord.tt}, function(err, data) {
-        for (var i=0; i<data.resultNum; i++) {
-            var word = data.result[i].tt;
-            console.log(word);
-            self.player.emit("singleTrans", word); //emits translations back to client one at a time
-        }
+    	var words = [];
+    	for (var i=0; i<data.resultNum; i++) {
+    		words.push(data.result[i].tt.trim());
+    		console.log(data.result[i].tt.trim());
+    	}
+        self.player.emit(TRANS_LIST, words);
     });
-
 }
 
 ChainGame.prototype.setCurrentWord = function(exp, lang) {
     /* Parameters:
      *   exp: the expression string the player has chosen
      *   lang: the uid string of exp
-     * Sets current word to be exp of language variety lang. */
-
-}
-
-ChainGame.prototype.isValidExp = function(exp) {
-    /* Parameters:
-     *   exp: a string submitted by client, intended as next word in chain
-     * Returns:
-     *   a boolean
-     * Checks if player submission is valid. true if exp in list of all
-     * translations of currentWord. false otherwise.
-
+     * Sets current word to be exp of language variety lang, then
+     * checks if player has won game. */
+    this.currentWord.tt = exp;
+    this.currentWord.uid = lang;
+    if (this.isWinState()) {
+    	this.player.emit("win");
+    }
 }
 
 ChainGame.prototype.isWinState = function() {
@@ -114,14 +124,8 @@ ChainGame.prototype.isWinState = function() {
      *   a boolean
      * Checks if player has won game. true if currentWord matches targetWord.
      * false otherwise. */
-    
-}
-
-ChainGame.prototype.isLoseState = function() {
-    /* Returns:
-     *   a boolean
-     * Checks if player has lost game. true if forfeited is true. false otherwise. */
-
+    return this.currentWord.tt == this.targetWord.tt && 
+           this.currentWord.uid == this.targetWord.uid;
 }
 
 ChainGame.prototype.resetGame = function() {

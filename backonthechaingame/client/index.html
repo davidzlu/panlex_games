@@ -12,7 +12,7 @@
       </div>
       <div class="screen" id="languageContainer">
         <input type="text" id="selectLanguage" value="eng-000">
-        <button name="languageSubmit">Submit</button>
+        <button id="languageSubmit">Submit</button>
       </div>
       <div class="screen" id="gameContainer" style="display: none">
         <h2>Here's your challenge:</h2><br/>
@@ -20,11 +20,12 @@
           <option>eng-000</option>
         </select><br/ ><!-- How to get languages? -->
         <select id="synonymContainer" size="5"></select><br/ >
-        <button name="transSubmit">Submit Translation</button>
-        <button name="loseButton">Give Up</button>
+        <button id="transSubmit">Submit Translation</button>
+        <button id="loseButton">Give Up</button>
       </div>
-      <div class="screen" id="endContainer">
+      <div class="screen" id="endContainer" style="display: none">
         <h2 id="endMessage"></h2>
+        <button id="resetButton">Reset</button>
       </div>
     </div>
 	  <script src="/js/client.js"></script>
