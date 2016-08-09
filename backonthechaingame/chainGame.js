@@ -9,6 +9,7 @@ var ASK_TRANS = "askTrans";
 var ASK_WORDS = "askWords";
 var SEND_WORDS = "sendWords";
 var TRANS_LIST = "transList";
+var RESET = "reset";
 
 function ChainGame(sock, lang) {
     /* Constructor function for creating an instance of the game. */
@@ -29,34 +30,36 @@ ChainGame.prototype.initSocket = function(sock) {
     /* Sets up event listeners for socket */
     var self = this;
     sock.on(ASK_WORDS, function(lang) {
-    	if (DEBUG) {
-    		self.currentWord = {tt:"ship", uid:"eng-000"};
-    		self.targetWord = {tt:"sun", uid:"eng-000"};
-    		sock.emit(SEND_WORDS, self.currentWord.tt, self.targetWord.tt);
-    	} else {
-    		self.getWords(sock, lang);
-    	}
-        
+        self.getWords(sock, lang);
     });
     sock.on(ASK_TRANS, function(lang) { //called when user asks for translations of word1
         self.getTranslations(lang);
     });
     sock.on(SET_WORD, function(exp, lang) {
-    	self.setCurrentWord(exp, lang);
+        self.setCurrentWord(exp, lang);
+    });
+    sock.on(RESET, function() {
+        self.resetGame();
     });
 
 
 }
 
 ChainGame.prototype.getWords = function() {
-    var count = 230000;    //hard-coded, corresponds approximately to number of expressions in eng-000 
+    if (DEBUG) {
+        this.currentWord = {tt:"ship", uid:"eng-000"};
+        this.targetWord = {tt:"sun", uid:"eng-000"};
+        this.player.emit(SEND_WORDS, this.currentWord.tt, this.targetWord.tt);
+    } else {
+        var count = 230000;    //hard-coded, corresponds approximately to number of expressions in eng-000 
            //(will eventually be changed to a query of the PanLex database to find how many expressions exist)
-    var offset = Math.floor(count*Math.random()+20000);
-    this._queryForWord(this.player, this.playerLang, offset, 1);
+        var offset = Math.floor(count*Math.random()+20000);
+        this._queryForWord(this.player, this.playerLang, offset, 1);
+    }
 }
 
 ChainGame.prototype._queryForWord = function(sock, lang, offset, wrdNumber) {
-	var self = this;
+    var self = this;
     panlex.query('/ex', {uid:lang,offset:offset,limit:1}, function(err, data) {  //get one random expression from PanLex
         data.result.forEach(function(ex) {
             if (wrdNumber == 1) {
@@ -91,17 +94,17 @@ ChainGame.prototype.getTranslations = function(targetLang) {
      * Queries PanLex API for translations of currentWord into
      * specified language variety. */
 
-	/*Finds translations of word1 (in the original user-selected language) into the second user-selected language 
-  	(both languages may be the same, in which case synonyms are emitted back to the client instead of 
-  	translations*/
-  	var self = this;
+    /*Finds translations of word1 (in the original user-selected language) into the second user-selected language 
+      (both languages may be the same, in which case synonyms are emitted back to the client instead of 
+      translations*/
+    var self = this;
     console.log("in getTranslations()");
     panlex.query('/ex', {"uid":targetLang, "trtt":this.currentWord.tt}, function(err, data) {
-    	var words = [];
-    	for (var i=0; i<data.resultNum; i++) {
-    		words.push(data.result[i].tt.trim());
-    		console.log(data.result[i].tt.trim());
-    	}
+        var words = [];
+        for (var i=0; i<data.resultNum; i++) {
+            words.push(data.result[i].tt.trim());
+            console.log(data.result[i].tt.trim());
+        }
         self.player.emit(TRANS_LIST, words);
     });
 }
@@ -115,7 +118,7 @@ ChainGame.prototype.setCurrentWord = function(exp, lang) {
     this.currentWord.tt = exp;
     this.currentWord.uid = lang;
     if (this.isWinState()) {
-    	this.player.emit("win");
+        this.player.emit("win");
     }
 }
 
@@ -131,7 +134,8 @@ ChainGame.prototype.isWinState = function() {
 ChainGame.prototype.resetGame = function() {
     /* Resets instance variables to those at beginning of game. Emits a confirmation
      * when finished. */
-
+    this.getWords();
+    console.log("Reset game");
 }
 
 module.exports = ChainGame;

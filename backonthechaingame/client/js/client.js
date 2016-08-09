@@ -13,15 +13,20 @@ $(document).ready(function() {
     var ASK_WORDS = "askWords";
     var SEND_WORDS = "sendWords";
     var TRANS_LIST = "transList";
+    var LANG_SUCCESS = "languageSuccess";
+    var LANG_FAIL = "languageFail";
+    var WIN = "win";
+    var LOSE = "lose";
+    var RESET = "reset";
 
-    socket.on("languageSuccess", onLanguageSuccess);
-    socket.on("languageFail", onLanguageFail);
+    //Socket event listeners
+    socket.on(LANG_SUCCESS, onLanguageSuccess);
+    socket.on(LANG_FAIL, onLanguageFail);
     socket.on(SEND_WORDS, onReceiveWords);
     socket.on(TRANS_LIST, onReceiveTranslation);
-    socket.on("win", onWin);
+    socket.on(WIN, onWin);
 
-    /* When the button on the first screen is clicked, send language 
-     * selection to server and show second screen */
+    //DOM event listeners
     $("#languageSubmit").on("click", function() {
         language = $("#selectLanguage").val();
         console.log("language: "+language);
@@ -29,11 +34,21 @@ $(document).ready(function() {
     });
     $("#transSubmit").on("click", sendWord);
     $("#loseButton").on("click", forfeit);
+    $("#resetButton").on("click", function() {
+        socket.emit(RESET);
+        curScreen.fadeOut();
+        curScreen = $("#gameContainer");
+    });
+    $("#seeTrans").on("click", function() {
+        console.log("translation button clicked, asking server for translations");
+        secondaryLang = $("#selectSecondaryLang").val();
+        socket.emit(ASK_TRANS, secondaryLang, curWord);  //asks server for a translation of word1
+    });
 
     /*Called when language is in database*/
     function onLanguageSuccess(msg) {
         console.log(msg);
-        socket.emit("askWords", language);
+        socket.emit(ASK_WORDS, language);
         curScreen.fadeOut();
         curScreen = $("#gameContainer");
         $("#currentLanguage").text(msg);
@@ -49,21 +64,12 @@ $(document).ready(function() {
         targetWord = word2;
         curScreen.fadeIn(function() {
             console.log("received "+word1+" and "+word2);
-            var translationButton = $("<button>",{ type:"button", name:"seeTrans",text:"Show translations"});
-            translationButton.on("click", function(){
-                console.log("translation button clicked, asking server for translations");
-                secondaryLang = $("#selectSecondaryLang").val();
-                socket.emit("askTrans", secondaryLang, word1);  //asks server for a translation of word1
-            });
-            $("#selectSecondaryLang").after(translationButton);
-            $("#gameContainer h2").after("Choose a language in which to list PanLex's translations/synonyms of <font color=\"FF0000\">"+word1+"</font>: <br>");
-            $("#gameContainer h2").after("<h3>Can you get from <font color=\"FF0000\">"+word1+"</font> to <font color=\"FF0000\">"+word2+"</font> using a chain of translations/synonyms?</h3>");
+            $("#chooseLangMsg").replaceWith($("<p>Choose a language in which to list PanLex's translations/synonyms of <font color=\"FF0000\">"+word1+": </font></p>"));
+            $("#objectiveMsg").replaceWith($("<h3>Can you get from <font color=\"FF0000\">"+word1+"</font> to <font color=\"FF0000\">"+word2+"</font> using a chain of translations/synonyms?</h3>"));
         });
-        
     }
 
     function onReceiveTranslation(wordList) {
-        
         for (var i=0; i<wordList.length; i++) {
             var word = wordList[i];
             var $wordOption = $("<option>"+word+"</option>");
@@ -75,7 +81,7 @@ $(document).ready(function() {
         var word = $("#synonymContainer").val();
         if (word !== "") {
             $("#synonymContainer").empty();
-            socket.emit("setWord", word, secondaryLang);
+            socket.emit(SET_WORD, word, secondaryLang);
             curWord = word;
             $("#gameContainer h3").replaceWith($("<h3>Can you get from <font color=\"FF0000\">"+curWord+"</font> to <font color=\"FF0000\">"+targetWord+"</font> using a chain of translations/synonyms?</h3>"));
         } else {
@@ -98,5 +104,4 @@ $(document).ready(function() {
             curScreen.fadeIn();
         });
     }
-
 });
