@@ -24,7 +24,6 @@ $(document).ready(function() {
         socket.emit("askWords", language);
         curScreen.fadeOut(function() {
             curScreen = $("#gameContainer");
-            curScreen.append().fadeIn();
             $("#currentLanguage").text(msg);
         });
     }
@@ -35,6 +34,7 @@ $(document).ready(function() {
     }
 
     function onReceiveWords(word1, word2) {
+        curScreen.fadeIn();
         console.log("received "+word1+" and "+word2);
         var translationButton = $("<button>",{ type:"button", name:"seeTrans",text:"Show translations"});
         translationButton.on("click", function(){
