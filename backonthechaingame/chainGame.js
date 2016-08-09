@@ -1,7 +1,7 @@
 var panlex = require("panlex");
 panlex.setUserAgent("Chain Game", "0.0");
 
-var DEBUG = true;
+var DEBUG = false;
 
 //Event names
 var SET_WORD = "setWord";
@@ -30,7 +30,7 @@ ChainGame.prototype.initSocket = function(sock) {
     /* Sets up event listeners for socket */
     var self = this;
     sock.on(ASK_WORDS, function(lang) {
-        self.getWords(sock, lang);
+        self.getWords();
     });
     sock.on(ASK_TRANS, function(lang) { //called when user asks for translations of word1
         self.getTranslations(lang);
@@ -41,8 +41,6 @@ ChainGame.prototype.initSocket = function(sock) {
     sock.on(RESET, function() {
         self.resetGame();
     });
-
-
 }
 
 ChainGame.prototype.getWords = function() {
