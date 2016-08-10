@@ -27,6 +27,7 @@ function ChainGame(sock, lang) {
         ex:0,
         uid:"",
     };
+    this.translations = [];
     this.initSocket(sock);
 }
 
@@ -45,15 +46,16 @@ ChainGame.prototype.initSocket = function(sock) {
     sock.on(RESET, function() {
         self.resetGame();
     });
-    sock.on(GET_UIDS, function(word) {
-        self.getLanguageVarieties(word);
+    sock.on(GET_UIDS, function() {
+        self.getLanguageVarieties();
     });
 }
 
 ChainGame.prototype.getWords = function() {
     if (DEBUG) {
-        this.currentWord = {tt:"ship", uid:"eng-000"};
-        this.targetWord = {tt:"sun", uid:"eng-000"};
+        this.currentWord = {tt:"ship", ex:541362, uid:"eng-000"};
+        this.targetWord = {tt:"sun", ex:557804, uid:"eng-000"};
+
         this.player.emit(SEND_WORDS, this.currentWord.tt, this.targetWord.tt);
     } else {
         var count = 230000;    //hard-coded, corresponds approximately to number of expressions in eng-000 
@@ -83,7 +85,7 @@ ChainGame.prototype._queryForWord = function(sock, lang, offset, wrdNumber) {
                     self.targetWord.ex = ex.ex;
                     self.targetWord.uid = lang;
                     console.log(self.targetWord);
-                    sock.emit(SEND_WORDS, self.currentWord.tt, self.targetWord.tt);   //send word1 and word2 back to client
+                    sock.emit(SEND_WORDS, self.currentWord, self.targetWord);   //send word1 and word2 back to client
                     console.log("just sent words");
                 } else { //if word2 candidate is same as word1
                     self._queryForWord(sock, lang, (offset + 10000)%229000, wrdNumber);  //try again
@@ -107,25 +109,30 @@ ChainGame.prototype.getTranslations = function(targetLang) {
     var self = this;
     console.log("in getTranslations()");
     panlex.query('/ex', {"uid":targetLang, "trtt":this.currentWord.tt}, function(err, data) {
-        var words = [];
-        for (var i=0; i<data.resultNum; i++) {
-            words.push(data.result[i].tt.trim());
-            console.log(data.result[i].tt.trim());
-        }
-        self.player.emit(TRANS_LIST, words);
+        self.translations = data.result;
+        self.player.emit(TRANS_LIST, data);
     });
 }
 
-ChainGame.prototype.setCurrentWord = function(exp, lang) {
+ChainGame.prototype.setCurrentWord = function(text, lang) {
     /* Parameters:
      *   exp: the expression string the player has chosen
      *   lang: the uid string of exp
      * Sets current word to be exp of language variety lang, then
      * checks if player has won game. */
-    this.currentWord.tt = exp;
-    this.currentWord.uid = lang;
+    for (var i=0; i<this.translations.length; i++) {
+        if (this.translations[i].tt == text) {
+            this.currentWord.tt = this.translations[i].tt;
+            this.currentWord.ex = this.translations[i].ex;
+            this.currentWord.uid = lang;
+            break;
+        }
+    }
+
     if (this.isWinState()) {
         this.player.emit("win");
+    } else {
+        this.getLanguageVarieties();
     }
 }
 
@@ -144,7 +151,7 @@ ChainGame.prototype.resetGame = function() {
     console.log("Reset game");
 }
 
-ChainGame.prototype.getLanguageVarieties = function(exp) {
+ChainGame.prototype.getLanguageVarieties = function() {
 	/* Parameter:
 	 *   exp: a string of the expression to be translated
 	 * Returns:
@@ -154,8 +161,8 @@ ChainGame.prototype.getLanguageVarieties = function(exp) {
 
 	var params = {
 		trex: this.currentWord.ex,
-        // can only get 2000 uids, which ones?
 	};
+    console.log(this.currentWord);
 	var self = this;
 	panlex.query("/lv", params, function(err, data) {
 		var lvList = [];

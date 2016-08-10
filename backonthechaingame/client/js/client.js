@@ -24,7 +24,7 @@ $(document).ready(function() {
     //sock event listeners
     sock.on(LANG_SUCCESS, onLanguageSuccess);
     sock.on(LANG_FAIL, onLanguageFail);
-    sock.on(SEND_WORDS, onReceiveWords);
+    sock.on(SEND_WORDS, onReceiveStartWords);
     sock.on(TRANS_LIST, onReceiveTranslation);
     sock.on(WIN, onWin);
     sock.on(VALID_LANGUAGES, onLanguageList);
@@ -63,22 +63,22 @@ $(document).ready(function() {
         alert(msg);
     }
 
-    function onReceiveWords(word1, word2) {
+    function onReceiveStartWords(word1, word2) {
         curWord = word1;
         targetWord = word2;
-        sock.emit(GET_UIDS, word1);
-        var newLangMsg = $("<p id='chooseLangMsg'>Choose a language in which to list PanLex's translations/synonyms of <font color=\"FF0000\">"+word1+": </font></p>");
+        sock.emit(GET_UIDS);
+        var newLangMsg = $("<p id='chooseLangMsg'>Choose a language in which to list PanLex's translations/synonyms of <font color=\"FF0000\">"+curWord+": </font></p>");
         $("#chooseLangMsg").replaceWith(newLangMsg);
-        $("#objectiveMsg").replaceWith($("<h3 id='objectiveMsg'>Can you get from <font color=\"FF0000\">"+word1+"</font> to <font color=\"FF0000\">"+word2+"</font> using a chain of translations/synonyms?</h3>"));
+        $("#objectiveMsg").replaceWith($("<h3 id='objectiveMsg'>Can you get from <font color=\"FF0000\">"+curWord+"</font> to <font color=\"FF0000\">"+targetWord+"</font> using a chain of translations/synonyms?</h3>"));
         curScreen.fadeIn(function() {
             console.log("received "+word1+" and "+word2); 
         });
     }
 
-    function onReceiveTranslation(wordList) {
-        for (var i=0; i<wordList.length; i++) {
-            var word = wordList[i];
-            var $wordOption = $("<option>"+word+"</option>");
+    function onReceiveTranslation(data) {
+        for (var i=0; i<data.resultNum; i++) {
+            var word = data.result[i].tt;
+            var $wordOption = $("<option></option>", {text:word});
             $("#synonymContainer").append($wordOption);
         }
     }
@@ -90,8 +90,10 @@ $(document).ready(function() {
             $("#selectSecondaryLang").empty();
             sock.emit(SET_WORD, word, secondaryLang);
             curWord = word;
-            sock.emit(GET_UIDS, curWord);
-            $("#gameContainer h3").replaceWith($("<h3>Can you get from <font color=\"FF0000\">"+curWord+"</font> to <font color=\"FF0000\">"+targetWord+"</font> using a chain of translations/synonyms?</h3>"));
+            
+            var newLangMsg = $("<p id='chooseLangMsg'>Choose a language in which to list PanLex's translations/synonyms of <font color=\"FF0000\">"+curWord+": </font></p>");
+            $("#chooseLangMsg").replaceWith(newLangMsg);
+            $("#objectiveMsg").replaceWith($("<h3 id='objectiveMsg'>Can you get from <font color=\"FF0000\">"+curWord+"</font> to <font color=\"FF0000\">"+targetWord+"</font> using a chain of translations/synonyms?</h3>"));
         } else {
             alert("Please select a word");
         }
