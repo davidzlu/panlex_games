@@ -25,7 +25,7 @@ $(document).ready(function() {
   var typeGuessMess;
   var moreClue;
   var langTrans;
-  var langPrompt;
+  var langPrompt = "Choose language: ";
 
   function getInstructions(){
       if(sourceLanguage=="eng-000"){
@@ -406,12 +406,42 @@ correctly)*/
       first=true;
       revealLetter = 0;
       curScreen = $("#languages");
-      $("p").first().next().replaceWith(langPrompt);
+    var form = $('<form>', { name: "userInput",
+      action: nothing,//displayGuess,
+      method: "post"});
+
+      var langText = langPrompt;
+      var langInput = $("<input>", {type:"text", id:"sourceLanguage", value:"eng-000"});
+      var nextButton = $("<button>Next</button>", {type:"button", name:"next"});
+      //nextButton.on("click",displayGuess);
+      //$("p").first().next().replaceWith(langPrompt);
       var helpButton = $("<button>Help</button>",{type:"button",name:"helpButton"});
-      curScreen.append(helpButton);
+      //form.append(langText,langInput,nextButton,helpButton);
+      //curScreen.append(form);
       helpButton.on("click",function(){
           var win = window.open("https://new.panlex.org/wp-content/uploads/2016/08/langs.txt", '_blank');
       });
+      /*collects sourceLanguage from user input and sets footer language
+        message*/
+
+    nextButton.on("mousedown",function(){
+    console.log("nextbutton mousedown");
+    sourceLanguage = $("#sourceLanguage").val();
+    //$("p:last").text("Playing in "+sourceLanguage);
+    getInstructions();
+  });
+
+    nextButton.on("mouseup", function(){
+    console.log("nextbutton mouseup");
+    if(sourceLanguage!=""){
+        displayGuess();
+        console.log("should have just called displayGuess with curScreen="+curScreen.attr("id"));
+    }else{
+        alert("Please enter a language!");
+    }
+  });
+form.append(langText,langInput,nextButton,helpButton);
+curScreen.append(form);
       curScreen.fadeIn();
       $("input:text:visible:first").focus();
     });
@@ -420,6 +450,9 @@ correctly)*/
   function getUserGuess(){
   /*gather input for user guesses*/
     guess = $("#guessEntry").children().last().prev().children().first().val();
+  }
+  function nothing(){
+    console.log("doing nothing");
   }
 
   function displayGuess() {
@@ -441,7 +474,6 @@ correctly)*/
           $('button[name=submitButton]').on("click", getUserGuess());
           if (guess == password) {
             curScreen = $("#win");
-            //console.log("WIN! calling createWinScreen");
             curScreen.append(createWinScreen()).fadeIn();
           } else {
             curScreen = $("#matching");
@@ -451,6 +483,9 @@ correctly)*/
         case "feedback":
           curScreen = $("#lose")
           curScreen.append(createLoseScreen()).fadeIn();
+          break;
+        case "languages":
+          console.log("languages case");
           break;
         default:
           curScreen = $("#waiting");
@@ -470,8 +505,7 @@ correctly)*/
 
   $("#start button").on("click", displayLanguages);
   /*if enter key is pressed on the start screen, it is as though the start 
-button
-    has been pressed*/
+    button has been pressed*/
   $(document).keypress(function(e){
     if(e.which == 13){
        if($("#start button").is(":visible")){
@@ -503,4 +537,5 @@ message*/
   $("#container").on("click", "button[name=submit]", displayGuess);
   $("#end:last-child").on("click", displayGuess);
 });
+
 
