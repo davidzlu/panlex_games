@@ -30655,6 +30655,8 @@ $(document).ready(function() {
   var moreClue;
   var langTrans;
   var langPrompt;
+  var powerMess;
+  var linkText;
 
   function getInstructions(){
       if(sourceLanguage=="eng-000"){
@@ -30694,6 +30696,17 @@ $(document).ready(function() {
                   typeGuessMess = typeGuessMess+trtt.tt+":";
                 });
               });
+            });
+          });
+      }
+      if(sourceLanguage=="eng-000"){
+          powerMess="Powered by PanLex";
+          $("h4").text(powerMess);
+      }else{
+          panlex.query('/ex',{"uid":sourceLanguage,"trtt":"power",limit:1,include:"trq",sort:"trq desc"},function(err,data){
+            data.result.forEach(function(trtt){
+              powerMess = "PanLex "+trtt.tt;
+              $("h4").text(powerMess);
             });
           });
       }
@@ -30842,6 +30855,17 @@ $(document).ready(function() {
             data.result.forEach(function(trtt){
               langPrompt = trtt.tt+" "+langTrans+":";
               $("#languageSelect p").text(langPrompt);
+            });
+          });
+      }
+      if(sourceLanguage=="eng-000"){
+          linkText="PanLex Website";
+          $("a").text(linkText);
+      }else{
+          panlex.query('/ex',{"uid":sourceLanguage,"trtt":"website",limit:1,include:"trq",sort:"trq desc"},function(err,data){            
+            data.result.forEach(function(trtt){
+              linkText = "PanLex "+trtt.tt;
+              $("a").text(linkText);
             });
           });
       }
@@ -31031,7 +31055,9 @@ correctly)*/
   function displayLanguages() {
     /* Handles transition from start screen to language input screen. */
     curScreen.fadeOut(function() {
-    $("#languagesContainer").remove();
+    $('button[name=helpButton]').remove();
+    //$("#helpButton").detach();
+    //$("#languagesContainer").remove();
       first=true;
       revealLetter = 0;
       curScreen = $("#languages");
@@ -31125,6 +31151,7 @@ message*/
   $("#languages button").on("mouseup", function(){
     if(sourceLanguage!=""){
         displayGuess();
+        $("#helpButton").remove();
     }else{
         alert("Please enter a language!");
     }
