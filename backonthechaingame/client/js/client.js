@@ -19,6 +19,7 @@ $(document).ready(function() {
     var LOSE = "lose";
     var RESET = "reset";
     var VALID_LANGUAGES = "validLanguages";
+    var GET_UIDS = "getUids";
 
     //sock event listeners
     sock.on(LANG_SUCCESS, onLanguageSuccess);
@@ -42,6 +43,7 @@ $(document).ready(function() {
         curScreen = $("#gameContainer");
     });
     $("#seeTrans").on("click", function() {
+        $("#synonymContainer").empty();
         console.log("translation button clicked, asking server for translations");
         secondaryLang = $("#selectSecondaryLang").val();
         sock.emit(ASK_TRANS, secondaryLang, curWord);  //asks server for a translation of word1
@@ -64,6 +66,7 @@ $(document).ready(function() {
     function onReceiveWords(word1, word2) {
         curWord = word1;
         targetWord = word2;
+        sock.emit(GET_UIDS, word1);
         var newLangMsg = $("<p id='chooseLangMsg'>Choose a language in which to list PanLex's translations/synonyms of <font color=\"FF0000\">"+word1+": </font></p>");
         $("#chooseLangMsg").replaceWith(newLangMsg);
         $("#objectiveMsg").replaceWith($("<h3 id='objectiveMsg'>Can you get from <font color=\"FF0000\">"+word1+"</font> to <font color=\"FF0000\">"+word2+"</font> using a chain of translations/synonyms?</h3>"));
@@ -84,8 +87,10 @@ $(document).ready(function() {
         var word = $("#synonymContainer").val();
         if (word !== null) {
             $("#synonymContainer").empty();
+            $("#selectSecondaryLang").empty();
             sock.emit(SET_WORD, word, secondaryLang);
             curWord = word;
+            sock.emit(GET_UIDS, curWord);
             $("#gameContainer h3").replaceWith($("<h3>Can you get from <font color=\"FF0000\">"+curWord+"</font> to <font color=\"FF0000\">"+targetWord+"</font> using a chain of translations/synonyms?</h3>"));
         } else {
             alert("Please select a word");
@@ -109,7 +114,6 @@ $(document).ready(function() {
     }
 
     function onLanguageList(lvList) {
-        $("#selectSecondaryLang").empty();
         for (var i=0; i<lvList.length; i++) {
             var langOption = $("<option>"+lvList[i]+"</option>");
             $("#selectSecondaryLang").append(langOption);

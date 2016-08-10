@@ -1,7 +1,7 @@
 var panlex = require("panlex");
 panlex.setUserAgent("Chain Game", "0.0");
 
-var DEBUG = false;
+var DEBUG = true;
 
 //Event names
 var SET_WORD = "setWord";
@@ -11,6 +11,7 @@ var SEND_WORDS = "sendWords";
 var TRANS_LIST = "transList";
 var RESET = "reset";
 var VALID_LANGUAGES = "validLanguages";
+var GET_UIDS = "getUids";
 
 function ChainGame(sock, lang) {
     /* Constructor function for creating an instance of the game. */
@@ -43,6 +44,9 @@ ChainGame.prototype.initSocket = function(sock) {
     });
     sock.on(RESET, function() {
         self.resetGame();
+    });
+    sock.on(GET_UIDS, function(word) {
+        self.getLanguageVarieties(word);
     });
 }
 
@@ -150,6 +154,7 @@ ChainGame.prototype.getLanguageVarieties = function(exp) {
 
 	var params = {
 		trex: this.currentWord.ex,
+        // can only get 2000 uids, which ones?
 	};
 	var self = this;
 	panlex.query("/lv", params, function(err, data) {
