@@ -30648,24 +30648,56 @@ $(document).ready(function() {
   var loseMessage;
   var luckMessage;
   var playingIn;
+  var submitMess;
+  var playAgain;
+  var forfeitMess;
+  var typeGuessMess;
+  var moreClue;
+  var langTrans;
+  var langPrompt;
 
   function getInstructions(){
       if(sourceLanguage=="eng-000"){
-          playingIn="Playing in eng-000";
+          playingIn="Your language: eng-000";
           $("p:last").text(playingIn);
       }else{
-          panlex.query('/ex',{"uid":sourceLanguage,"trtt":"play",limit:1},function(err,data){
+          panlex.query('/ex',{"uid":sourceLanguage,"trtt":"your",limit:1,include:"trq",sort:"trq desc"},function(err,data){
             data.result.forEach(function(trtt){
               playingIn = trtt.tt+" ";
-              panlex.query('/ex',{"uid":sourceLanguage,"trtt":"use",limit:1},function(err,data){
+              panlex.query('/ex',{"uid":sourceLanguage,"trtt":"language",limit:1,include:"trq",sort:"trq desc"},function(err,data){
                 data.result.forEach(function(trtt){
-                  playingIn = playingIn+trtt.tt+" "+sourceLanguage;
+                  langTrans = trtt.tt;
+                  playingIn = playingIn+trtt.tt+": "+sourceLanguage;
                   $("p:last").text(playingIn);
                 });
               });
             });
           });
       }
+      if(sourceLanguage=="eng-000"){
+          forfeitMess="Forfeit";
+      }else{
+          panlex.query('/ex',{"uid":sourceLanguage,"trtt":"give up",limit:1,include:"trq",sort:"trq desc"},function(err,data){
+            data.result.forEach(function(trtt){
+              forfeitMess = trtt.tt;
+            });
+          });
+      }
+      if(sourceLanguage=="eng-000"){
+          typeGuessMess ="Type in a guess:";
+      }else{
+          panlex.query('/ex',{"uid":sourceLanguage,"trtt":"write",limit:1,include:"trq",sort:"trq desc"},function(err,data){
+            data.result.forEach(function(trtt){
+              typeGuessMess = trtt.tt+" ";
+              panlex.query('/ex',{"uid":sourceLanguage,"trtt":"guess",limit:1,include:"trq",sort:"trq desc"},function(err,data){
+                data.result.forEach(function(trtt){
+                  typeGuessMess = typeGuessMess+trtt.tt+":";
+                });
+              });
+            });
+          });
+      }
+
     instructions = "";
     if(sourceLanguage == "eng-000"){
       instructions = "every clue same meaning secret word.\nguess secret word?!";
@@ -30673,33 +30705,31 @@ $(document).ready(function() {
       $("#title p").text(instructions);
       getWinExpr();
     }else{
-      panlex.query('/ex',{"uid":sourceLanguage,"trtt":"every",limit:1},function(err,data){
+      panlex.query('/ex',{"uid":sourceLanguage,"trtt":"every",limit:1,include:"trq",sort:"trq desc"},function(err,data){
           data.result.forEach(function(trtt){
               instructions = instructions + trtt.tt;
-              panlex.query('/ex',{"uid":sourceLanguage,"trtt":"clue",limit:1},function(err,data){
+              panlex.query('/ex',{"uid":sourceLanguage,"trtt":"clue",limit:1,include:"trq",sort:"trq desc"},function(err,data){
                   data.result.forEach(function(trtt){
                       instructions = instructions + " " + trtt.tt;
                       clueTrans = trtt.tt;
-                      panlex.query('/ex',{"uid":sourceLanguage,"trtt":"equal",limit:1},function(err,data){
+                      panlex.query('/ex',{"uid":sourceLanguage,"trtt":"equal",limit:1,include:"trq",sort:"trq desc"},function(err,data){
                           data.result.forEach(function(trtt){
                               instructions = instructions + " " + trtt.tt;
-                              panlex.query('/ex',{"uid":sourceLanguage,"trtt":"meaning",limit:1},function(err,data){
+                              panlex.query('/ex',{"uid":sourceLanguage,"trtt":"meaning",limit:1,include:"trq",sort:"trq desc"},function(err,data){
                                   data.result.forEach(function(trtt){
                                       instructions = instructions + " " + trtt.tt;
-                                      	panlex.query('/ex',{"uid":sourceLanguage,"trtt":"unknown",limit:1},function(err,data){
+                                      	panlex.query('/ex',{"uid":sourceLanguage,"trtt":"unknown",limit:1,include:"trq",sort:"trq desc"},function(err,data){
                                           data.result.forEach(function(trtt){
                                               instructions = instructions + " " + trtt.tt;
                                               passwordTrans = trtt.tt;
-                                              panlex.query('/ex',{"uid":sourceLanguage,"trtt":"word",limit:1},function(err,data){
+                                              panlex.query('/ex',{"uid":sourceLanguage,"trtt":"word",limit:1,include:"trq",sort:"trq desc"},function(err,data){
                                                   data.result.forEach(function(trtt){
                                                       instructions = instructions + " " + trtt.tt;
                                                       passwordTrans = passwordTrans + " " + trtt.tt;
-                                                      panlex.query('/ex',{"uid":sourceLanguage,"trtt":"guess",limit:1},function(err,data){
+                                                      panlex.query('/ex',{"uid":sourceLanguage,"trtt":"guess",limit:1,include:"trq",sort:"trq desc"},function(err,data){
                                                           data.result.forEach(function(trtt){
                                                               instructions = instructions + ".\n " + trtt.tt + " " + passwordTrans+ "?!";
-                                                              console.log("instructions: "+instructions+" passwordTrans: "+passwordTrans);
                                                               $("#title p").text(instructions);
-                                                              //$("#guessEntry h2").text(passwordTrans);
                                                               getWinExpr();
                                                           });
                                                       });
@@ -30722,10 +30752,10 @@ $(document).ready(function() {
       if(sourceLanguage=="eng-000"){
           winMessage="Congratulations, you won!";
       }else{
-          panlex.query('/ex',{"uid":sourceLanguage,"trtt":"congratulations",limit:1},function(err,data){
+          panlex.query('/ex',{"uid":sourceLanguage,"trtt":"congratulations",limit:1,include:"trq",sort:"trq desc"},function(err,data){
             data.result.forEach(function(trtt){
               winMessage = trtt.tt+", ";
-              panlex.query('/ex',{"uid":sourceLanguage,"trtt":"win",limit:1},function(err,data){
+              panlex.query('/ex',{"uid":sourceLanguage,"trtt":"win",limit:1,include:"trq",sort:"trq desc"},function(err,data){
                 data.result.forEach(function(trtt){
                   winMessage = winMessage+trtt.tt+"!";
                 });
@@ -30736,7 +30766,7 @@ $(document).ready(function() {
       if(sourceLanguage=="eng-000"){
           thankyou="Thank you for playing.";
       }else{
-          panlex.query('/ex',{"uid":sourceLanguage,"trtt":"thank you",limit:1},function(err,data){
+          panlex.query('/ex',{"uid":sourceLanguage,"trtt":"thank you",limit:1,include:"trq",sort:"trq desc"},function(err,data){
             data.result.forEach(function(trtt){
               thankyou = trtt.tt+".";
             });
@@ -30745,10 +30775,13 @@ $(document).ready(function() {
       if(sourceLanguage=="eng-000"){
           incorrectMess="That's not the password, try again!";
       }else{
-          panlex.query('/ex',{"uid":sourceLanguage,"trtt":"no",limit:1},function(err,data){
+          //var counter=0;
+          panlex.query('/ex',{"uid":sourceLanguage,"trtt":"no", limit:1,include:"trq",sort:"trq desc"},function(err,data){//,include:"trq",sort:"trq"},function(err,data){
             data.result.forEach(function(trtt){
-              console.log("passwordTrans: "+passwordTrans);
+             // if(counter=0){
               incorrectMess = trtt.tt+" "+passwordTrans+".";
+              //}
+             // counter = counter + 1;
             });
           });
       }
@@ -30756,16 +30789,18 @@ $(document).ready(function() {
           loseMessage="The password was ";
           luckMessage=". Better luck next time!";
       }else{
-          panlex.query('/ex',{"uid":sourceLanguage,"trtt":"before",limit:1},function(err,data){
+          panlex.query('/ex',{"uid":sourceLanguage,"trtt":"before",limit:1,include:"trq",sort:"trq desc"},function(err,data){
             data.result.forEach(function(trtt){
               loseMessage = trtt.tt+" "+passwordTrans+": ";
-              panlex.query('/ex',{"uid":sourceLanguage,"trtt":"next",limit:1},function(err,data){
+              panlex.query('/ex',{"uid":sourceLanguage,"trtt":"try",limit:1,include:"trq",sort:"trq desc"},function(err,data){
                 data.result.forEach(function(trtt){
                   luckMessage = trtt.tt;
-                  panlex.query('/ex',{"uid":sourceLanguage,"trtt":"good",limit:1},function(err,data){
+                  playAgain = trtt.tt;
+                  panlex.query('/ex',{"uid":sourceLanguage,"trtt":"again",limit:1,include:"trq",sort:"trq desc"},function(err,data){
                       data.result.forEach(function(trtt){
                         luckMessage = luckMessage + " "+trtt.tt;
-                        panlex.query('/ex',{"uid":sourceLanguage,"trtt":"luck",limit:1},function(err,data){
+                        playAgain = playAgain+" "+trtt.tt;
+                        panlex.query('/ex',{"uid":sourceLanguage,"trtt":"please",limit:1,include:"trq",sort:"trq desc"},function(err,data){
                           data.result.forEach(function(trtt){
                               luckMessage = luckMessage + " "+trtt.tt+"!";
                           });
@@ -30777,6 +30812,39 @@ $(document).ready(function() {
             });
           });
       }
+      if(sourceLanguage=="eng-000"){
+          submitMess="Submit";
+          $('button[name=submitButton]').text(submitMess);
+      }else{
+          panlex.query('/ex',{"uid":sourceLanguage,"trtt":"submit",limit:1,include:"trq",sort:"trq desc"},function(err,data){
+            data.result.forEach(function(trtt){
+              //console.log("passwordTrans: "+passwordTrans);
+              submitMess = trtt.tt;
+              console.log("submitMess: "+submitMess);
+              $('button[name=submitButton]').text(submitMess);
+            });
+          });
+      }
+      if(sourceLanguage=="eng-000"){
+          moreClue="get another clue";
+      }else{
+          panlex.query('/ex',{"uid":sourceLanguage,"trtt":"more",limit:1,include:"trq",sort:"trq desc"},function(err,data){
+            data.result.forEach(function(trtt){
+              moreClue = trtt.tt+" "+clueTrans;
+            });
+          });
+      }
+      if(sourceLanguage=="eng-000"){
+          langPrompt="Choose language:";
+          $("#languageSelect p").text(langPrompt);
+      }else{
+          panlex.query('/ex',{"uid":sourceLanguage,"trtt":"choose",limit:1,include:"trq",sort:"trq desc"},function(err,data){
+            data.result.forEach(function(trtt){
+              langPrompt = trtt.tt+" "+langTrans+":";
+              $("#languageSelect p").text(langPrompt);
+            });
+          });
+      }
 
   }
 
@@ -30784,7 +30852,7 @@ $(document).ready(function() {
       panlex.query('/ex',{uid:sourceLanguage,offset:offset,limit:1},function(err,data){
           data.result.forEach(function (ex) {
               var wrd = ex.tt;
-              console.log(offset+": "+wrd);
+              //console.log(offset+": "+wrd);
               if(wrd.indexOf(" ")==-1 && wrd.indexOf("\'"==-1)&&wrd.length<13){// && (new RegExp('[A-Z]')).test(wrd)==false){
                   getClue(wrd,ex.ex);
               }else{
@@ -30801,26 +30869,26 @@ $(document).ready(function() {
     panlex.query('/ex',{"uid":sourceLanguage,"trex":password_id},function(err,data,password_id){
         var counter = 1;
         var len = data.result.length;
-        console.log("len: "+len);
+        //console.log("len: "+len);
                 if(len==0){
                     var count=230000;
                     offset = Math.floor(count*Math.random()+20000);
-                    console.log(offset);
+                    //console.log(offset);
                     var stop = false;
                     getPassword();
                 }
         data.result.forEach(function(trtt,password_id){
-            console.log("trtt: "+trtt.tt);
+            //console.log("trtt: "+trtt.tt);
             clue=trtt.tt+", "+clue;
                 if(len==0){
                     var count=230000;
                     offset = Math.floor(count*Math.random()+20000);
-                    console.log(offset);
+                    //console.log(offset);
                     var stop = false;
                     getPassword();
                 }else{
                     if(counter==len){
-                        $("h3").html("<h3>Clue:</h3>");
+                        $("h3").html("<h3>"+clueTrans+":</h3>");
                         $("h3").html($("h3").html()+"<font color = \"990000\">"+clue+", </font>");
                         password = wrd;
                         console.log("final password: "+password);
@@ -30835,7 +30903,7 @@ $(document).ready(function() {
   }
   function star(){
     var starized = "";
-    console.log("trying to starize "+password);
+    //console.log("trying to starize "+password);
     if(password!=null){
         for(var j = 0; j < revealLetter; j++){
             starized = starized + password[j];
@@ -30856,8 +30924,15 @@ $(document).ready(function() {
       action: formAction,
       method: "post"});
     input = $('<input>', {type: "text", name: inputName});
+    //var submitButton = $("<button>"+submitMess+"</button>", { type:"button", name:"submitButton"});
     var submitButton = $('<button type="button" name="submit">Submit</button>');
-    $('button[name=submitButton]').on("click", getUserGuess());
+    //$('button[name=submitButton]').text(submitMess);
+    //$('button[name=submitButton]').on("click", function(){
+     //   getUserGuess();
+     //   displayGuess();
+     //   console.log("submit button pressed");
+    //});
+    $('button[name=submitButton]').on("click", getUserGuess);
     $(':text').focus();
     form.append(input, '<br><br>', submitButton);
     return form;
@@ -30878,11 +30953,11 @@ $(document).ready(function() {
     var waitScreen = $('<div>', { id: "wait"});
     var message, callback, newClueButton;
       message = $("<h3>"+incorrectMess+"</h3>");
-      newClueButton = $("<button>Get another clue</button>",{type:"button",name:"newClueButton"});
+      newClueButton = $("<button>"+moreClue+"</button>",{type:"button",name:"newClueButton"});
       callback = displayGuess;
       first=false;
       revealLetter = revealLetter + 1;
-      var giveUp = $("<button>Forfeit this password</button>", { type:"button", name:"giveUpButton"});
+      var giveUp = $("<button>"+forfeitMess+"</button>", { type:"button", name:"giveUpButton"});
       giveUp.on("click",forfeited);
     waitScreen.append(message,newClueButton,giveUp);
     newClueButton.on("click", callback);
@@ -30902,14 +30977,14 @@ $(document).ready(function() {
                 //These 4 lines necessary prep for calling getPassword()
                 var count=230000;
                 offset = Math.floor(count*Math.random()+20000);
-                console.log(offset);
+                //console.log(offset);
                 var stop = false;
                 getPassword();
                 passText =  $("<h2>"+passwordTrans+" loading...</h2>");
-                clueText = $("<h3>Clue: <font color = \"990000\">loading...</font></h3>");
+                clueText = $("<h3>"+clueTrans+": <font color = \"990000\">loading...</font></h3>");
             }else{
                 passText =  $("<h2>"+passwordTrans+": "+star()+"</h2>");
-                clueText = $("<h3>Clue: <font color = \"990000\">"+clue+"</font></h3>");
+                clueText = $("<h3>"+clueTrans+": <font color = \"990000\">"+clue+"</font></h3>");
             }
         }else{
             if(first){
@@ -30917,9 +30992,9 @@ $(document).ready(function() {
                 first=true;
             }
         }
-    var title2 = $("<p>Type in a guess:</p>");
+    var title2 = $("<p>"+typeGuessMess+"</p>");
     var form = createFormElement("guessForm");
-    var giveUp = $("<button>Forfeit this password</button>", { type:"button", name:"giveUp"});
+    var giveUp = $("<button>"+forfeitMess+"</button>", { type:"button", name:"giveUp"});
     giveUp.on("click",forfeited);
     guessEntry.append(passText, clueText, title2, form, giveUp);
     return guessEntry;
@@ -30934,9 +31009,9 @@ correctly)*/
     var winScreen = $("<div>",{id:"winContainer"});
     first=true;
     var score = Math.ceil(((password.length - revealLetter)/password.length)*10);
-    console.log("winMessage before adding: "+winMessage);
+    //console.log("winMessage before adding: "+winMessage);
     var message = $("<h2>"+winMessage+"</h2><h3>Your score: <font color= \"990000\">"+score+"</font> points out of 10</h2><p>"+thankyou+"</p>");
-    var againButton = $("<button>Play Again!</button>", { type:"button", name:"againButton"});
+    var againButton = $("<button>"+playAgain+"</button>", { type:"button", name:"againButton"});
     winScreen.append(message, againButton);
     againButton.on("click", displayLanguages);
     return winScreen;
@@ -30948,7 +31023,7 @@ correctly)*/
     var loseScreen = $("<div>",{id:"loseContainer"});
     var message = $("<h2>"+loseMessage+"<font color=\"990000\">"+password+"</font>. "+luckMessage+"</h2>");
     var thank = $("<h4>"+thankyou+"</h4>");
-    var againButton = $("<button>Play Again!</button>", { type:"button", name:"againButton"});
+    var againButton = $("<button>"+playAgain+"</button>", { type:"button", name:"againButton"});
     loseScreen.append(message, thank, againButton);
     againButton.on("click", displayLanguages);
     return loseScreen;
@@ -30956,10 +31031,16 @@ correctly)*/
   function displayLanguages() {
     /* Handles transition from start screen to language input screen. */
     curScreen.fadeOut(function() {
+    $("#languagesContainer").remove();
       first=true;
       revealLetter = 0;
-      //$("#title p").text(instructions);
       curScreen = $("#languages");
+      $("p").first().next().replaceWith(langPrompt);
+      var helpButton = $("<button>Help</button>",{type:"button",name:"helpButton"});
+      curScreen.append(helpButton);
+      helpButton.on("click",function(){
+          var win = window.open("https://new.panlex.org/wp-content/uploads/2016/08/langs.txt", '_blank');
+      });
       curScreen.fadeIn();
       $("input:text:visible:first").focus();
     });
@@ -30981,7 +31062,7 @@ correctly)*/
         case "waiting":
           curScreen = $("#guess");
           $("guesserContainer").remove();
-          console.log("about to creatGuessForm()");
+          //console.log("about to creatGuessForm()");
           curScreen.append(createGuessForm(false)).fadeIn();
           $("input:text:visible:first").focus();
           break;
@@ -30989,7 +31070,7 @@ correctly)*/
           $('button[name=submitButton]').on("click", getUserGuess());
           if (guess == password) {
             curScreen = $("#win");
-            console.log("WIN! calling createWinScreen");
+            //console.log("WIN! calling createWinScreen");
             curScreen.append(createWinScreen()).fadeIn();
           } else {
             curScreen = $("#matching");
@@ -31027,7 +31108,7 @@ button
        }else if($("input:text").is(":visible")){
          displayGuess();
        }else{
-         console.log("neither visible!");
+         //console.log("neither visible!");
        }
        return false;
     }
