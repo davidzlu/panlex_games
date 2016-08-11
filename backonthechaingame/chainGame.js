@@ -1,7 +1,7 @@
 var panlex = require("panlex");
 panlex.setUserAgent("Chain Game", "0.0");
 
-var DEBUG = true;
+var DEBUG = false; // set true to keep start and end words as ship and sun
 
 //Event names
 var SET_WORD = "setWord";
@@ -62,7 +62,6 @@ ChainGame.prototype.getWords = function() {
     if (DEBUG) {
         this.currentWord = {tt:"ship", ex:541362, uid:"eng-000"};
         this.targetWord = {tt:"sun", ex:557804, uid:"eng-000"};
-
         this.player.emit(SEND_WORDS, this.currentWord.tt, this.targetWord.tt);
     } else {
         var count = 230000;    //hard-coded, corresponds approximately to number of expressions in eng-000 
@@ -92,7 +91,7 @@ ChainGame.prototype._queryForWord = function(sock, lang, offset, wrdNumber) {
                     self.targetWord.ex = ex.ex;
                     self.targetWord.uid = lang;
                     console.log(self.targetWord);
-                    sock.emit(SEND_WORDS, self.currentWord, self.targetWord);   //send word1 and word2 back to client
+                    sock.emit(SEND_WORDS, self.currentWord.tt, self.targetWord.tt);   //send word1 and word2 back to client
                     console.log("just sent words");
                 } else { //if word2 candidate is same as word1
                     self._queryForWord(sock, lang, (offset + 10000)%229000, wrdNumber);  //try again
