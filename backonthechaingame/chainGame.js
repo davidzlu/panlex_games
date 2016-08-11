@@ -195,16 +195,79 @@ ChainGame.prototype.translateInstructions = function(sourceLanguage) {
                  self.instructionWords[1]=(ex.tt);
              });
         });
+        panlex.query('/ex',{"uid":sourceLanguage,"trtt":"power",limit:1,include:"trq",sort:"trq desc"},function(err,data){
+             data.result.forEach(function(ex) {
+                 self.instructionWords[2]=(ex.tt);
+             });
+        });
+        panlex.query('/ex',{"uid":sourceLanguage,"trtt":"challenge",limit:1,include:"trq",sort:"trq desc"},function(err,data){
+             data.result.forEach(function(ex) {
+                 self.instructionWords[3]=(ex.tt);
+             });
+        });
+        panlex.query('/ex',{"uid":sourceLanguage,"trtt":"choose",limit:1,include:"trq",sort:"trq desc"},function(err,data){
+             data.result.forEach(function(ex) {
+                 self.instructionWords[4]=(ex.tt);
+             });
+        });
+        panlex.query('/ex',{"uid":sourceLanguage,"trtt":"show",limit:1,include:"trq",sort:"trq desc"},function(err,data){
+             data.result.forEach(function(ex) {
+                 self.instructionWords[5]=(ex.tt);
+             });
+        });
+        panlex.query('/ex',{"uid":sourceLanguage,"trtt":"translation",limit:1,include:"trq",sort:"trq desc"},function(err,data){
+             data.result.forEach(function(ex) {
+                 self.instructionWords[6]=(ex.tt);
+             });
+        });
+        panlex.query('/ex',{"uid":sourceLanguage,"trtt":"use",limit:1,include:"trq",sort:"trq desc"},function(err,data){
+             data.result.forEach(function(ex) {
+                 self.instructionWords[7]=(ex.tt);
+             });
+        });
+        panlex.query('/ex',{"uid":sourceLanguage,"trtt":"give up",limit:1,include:"trq",sort:"trq desc"},function(err,data){
+             data.result.forEach(function(ex) {
+                 self.instructionWords[8]=(ex.tt);
+             });
+        });
+        panlex.query('/ex',{"uid":sourceLanguage,"trtt":"win",limit:1,include:"trq",sort:"trq desc"},function(err,data){
+             data.result.forEach(function(ex) {
+                 self.instructionWords[9]=(ex.tt);
+             });
+        });
+        panlex.query('/ex',{"uid":sourceLanguage,"trtt":"lose",limit:1,include:"trq",sort:"trq desc"},function(err,data){
+             data.result.forEach(function(ex) {
+                 self.instructionWords[10]=(ex.tt);
+             });
+        });
+        panlex.query('/ex',{"uid":sourceLanguage,"trtt":"reset",limit:1,include:"trq",sort:"trq desc"},function(err,data){
+             data.result.forEach(function(ex) {
+                 self.instructionWords[11]=(ex.tt);
+             });
+        });
+        panlex.query('/ex',{"uid":sourceLanguage,"trtt":"you",limit:1,include:"trq",sort:"trq desc"},function(err,data){
+             data.result.forEach(function(ex) {
+                 self.instructionWords[12]=(ex.tt);
+                 console.log("got you");
+             });
+        });
+        panlex.query('/ex',{"uid":sourceLanguage,"trtt":"move",limit:1,include:"trq",sort:"trq desc"},function(err,data){
+             data.result.forEach(function(ex) {
+                 self.instructionWords[13]=(ex.tt);
+                 console.log("got move");
+             });
+        });
+
         setTimeout(function(){
             //keep looping until all instruction words have been translated
             console.log(self.instructionWords.length);
-            if(self.instructionWords.length>=2){
+            if(self.instructionWords.length>=14){
                 console.log("will emit INSTRUCTIONS");
                 self.player.emit(INSTRUCTIONS,self.instructionWords);
                 console.log("just emitted INSTRUCTIONS");
                 //break;
             }
-        },1000);
+        },10000);
         console.log("finished settimeout");
 }
 
