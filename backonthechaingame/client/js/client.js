@@ -7,7 +7,7 @@ $(document).ready(function() {
     var secondaryLang;
     var curWord, targetWord;
     var insnsHaveBeenTranslated = false;
-    var loseMess, winMess;
+    var loseMess, winMess, selectWordMess="";
 
     //event list
     var SET_WORD = "setWord";
@@ -105,7 +105,7 @@ $(document).ready(function() {
             $("#chooseLangMsg").replaceWith(newLangMsg);
             $("#objectiveMsg").replaceWith($("<h3 id='objectiveMsg'><font color=\"FF0000\">"+curWord+"</font>--?--><font color=\"FF0000\">"+targetWord+"</font> using a chain of translations/synonyms?</h3>"));
         } else {
-            alert("Please select a word");
+            alert(selectWordMess);
         }
     }
 
@@ -138,6 +138,7 @@ $(document).ready(function() {
        for (var i=0; i<insnWords.length; i++) {
            console.log(insnWords[i]);
        }
+       $("#currentLanguage").text(insnWords[0]+" "+insnWords[1]+": "+language);
        $("h4").text("PanLex "+insnWords[2]);
        $("h2").text(insnWords[0]+" "+insnWords[3]+":");
        $("#objectiveMsg").html("<h3>"+insnWords[12]+" "+insnWords[13]+" <font color=\"FF0000\">"+curWord+"</font> --?--> <font color=\"FF0000\">"+targetWord+"</font> "+insnWords[7]+" "+insnWords[6]+"?</h3>");
@@ -147,5 +148,7 @@ $(document).ready(function() {
        $("#loseButton").text(insnWords[8]);
        loseMess = insnWords[12]+" "+insnWords[10]+"!";
        winMess = insnWords[12]+" "+insnWords[9]+"!";
+       selectWordMess = insnWords[4]+" "+insnWords[15];
+       $("#resetButton").text(insnWords[11]);
     }
 });
