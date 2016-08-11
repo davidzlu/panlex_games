@@ -257,17 +257,24 @@ ChainGame.prototype.translateInstructions = function(sourceLanguage) {
                  console.log("got move");
              });
         });
+        panlex.query('/ex',{"uid":sourceLanguage,"trtt":"for",limit:1,include:"trq",sort:"trq desc"},function(err,data){
+             data.result.forEach(function(ex) {
+                 self.instructionWords[14]=(ex.tt);
+                 console.log("got move");
+             });
+        });
+
 
         setTimeout(function(){
             //keep looping until all instruction words have been translated
             console.log(self.instructionWords.length);
-            if(self.instructionWords.length>=14){
+            if(self.instructionWords.length>=15){
                 console.log("will emit INSTRUCTIONS");
                 self.player.emit(INSTRUCTIONS,self.instructionWords);
                 console.log("just emitted INSTRUCTIONS");
                 //break;
             }
-        },10000);
+        },7000);
         console.log("finished settimeout");
 }
 
