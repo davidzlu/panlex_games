@@ -75,7 +75,7 @@ $(document).ready(function() {
         curWord = word1;
         targetWord = word2;
         sock.emit(GET_UIDS);
-        if(!insnsHaveBeenTranslated){
+        if(!insnsHaveBeenTranslated || language=="eng-000"){
             console.log("changing messages because insns supposedly haven't been translated yet");
             var newLangMsg = $("<p id='chooseLangMsg'>Choose a language in which to list PanLex's translations/synonyms of <font color=\"FF0000\">"+curWord+": </font></p>");
             $("#chooseLangMsg").replaceWith(newLangMsg);
@@ -101,7 +101,7 @@ $(document).ready(function() {
             $("#selectSecondaryLang").empty();
             sock.emit(SET_WORD, word, secondaryLang);
             curWord = word;
-            if(!insnsHaveBeenTranslated){
+            if(!insnsHaveBeenTranslated || language=="eng-000"){
                 var newLangMsg = $("<p id='chooseLangMsg'>Choose a language in which to list PanLex's translations/synonyms of <font color=\"FF0000\">"+curWord+": </font></p>");
                 $("#chooseLangMsg").replaceWith(newLangMsg);
                 $("#objectiveMsg").replaceWith($("<h3 id='objectiveMsg'><font color=\"FF0000\">"+curWord+"</font>--?--><font color=\"FF0000\">"+targetWord+"</font> using a chain of translations/synonyms?</h3>"));
@@ -137,6 +137,7 @@ $(document).ready(function() {
     }
     
     function onInstructions(insnArr){
+      if(language!="eng-000"){
        insnWords = insnArr;
        console.log("in onInstructions");
        insnsHaveBeenTranslated = true;
@@ -155,5 +156,11 @@ $(document).ready(function() {
        winMess = insnWords[12]+" "+insnWords[9]+"!";
        selectWordMess = insnWords[4]+" "+insnWords[15];
        $("#resetButton").text(insnWords[11]);
+     }else{
+       loseMess = "You lose!";
+       winMess = "You win!";
+       selectWordMess = "Please select a word";
+
+     }
     }
 });
