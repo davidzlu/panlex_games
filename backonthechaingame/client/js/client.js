@@ -23,7 +23,7 @@ $(document).ready(function() {
     var INSTRUCTIONS = "instructions";
 
     //sock event listeners
-    sock.on(INSTRUCTIONS), onInstructionsTranslation;
+    sock.on(INSTRUCTIONS, onInstructions);
     sock.on(LANG_SUCCESS, onLanguageSuccess);
     sock.on(LANG_FAIL, onLanguageFail);
     sock.on(SEND_WORDS, onReceiveStartWords);
@@ -127,8 +127,8 @@ $(document).ready(function() {
         }
     }
     
-    function onInstructionsTranslation(insnWords){
-       console.log("in onInstructionsTranslations");
+    function onInstructions(insnWords){
+       console.log("in onInstructions");
        for (var i=0; i<insnWords.length; i++) {
            console.log(insnWords[i]);
        }

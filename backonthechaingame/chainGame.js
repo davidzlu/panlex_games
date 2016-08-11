@@ -12,7 +12,8 @@ var TRANS_LIST = "transList";
 var RESET = "reset";
 var VALID_LANGUAGES = "validLanguages";
 var GET_UIDS = "getUids";
-var INSTRUCTIONS = "askInstructions";
+var ASK_INS = "askInstructions"
+var INSTRUCTIONS = "instructions";
 
 function ChainGame(sock, lang) {
     /* Constructor function for creating an instance of the game. */
@@ -51,9 +52,9 @@ ChainGame.prototype.initSocket = function(sock) {
     sock.on(GET_UIDS, function() {
         self.getLanguageVarieties();
     });
-    sock.on(INSTRUCTIONS, function(lang){
+    sock.on(ASK_INS, function(lang){
         console.log("received askInstructions event");
-        self.translateInstructions();
+        self.translateInstructions(lang);
     });
 }
 
@@ -183,7 +184,7 @@ ChainGame.prototype.translateInstructions = function(sourceLanguage) {
         /* Lemmatically translates game's instructions and messages */
         var self = this;
 
-        console.log("in translateInstuctions");
+        console.log("in translateInstuctions, lang="+sourceLanguage);
         panlex.query('/ex',{"uid":sourceLanguage,"trtt":"your",limit:1,include:"trq",sort:"trq desc"},function(err,data){
              data.result.forEach(function(ex) {
                  self.instructionWords[0]=(ex.tt);
