@@ -12,6 +12,7 @@ var TRANS_LIST = "transList";
 var RESET = "reset";
 var VALID_LANGUAGES = "validLanguages";
 var GET_UIDS = "getUids";
+var INSTRUCTIONS = "askInstructions";
 
 function ChainGame(sock, lang) {
     /* Constructor function for creating an instance of the game. */
@@ -28,6 +29,7 @@ function ChainGame(sock, lang) {
         uid:"",
     };
     this.translations = [];
+    this.instructionWords = [];
     this.initSocket(sock);
 }
 
@@ -48,6 +50,10 @@ ChainGame.prototype.initSocket = function(sock) {
     });
     sock.on(GET_UIDS, function() {
         self.getLanguageVarieties();
+    });
+    sock.on(INSTRUCTIONS, function(lang){
+        console.log("received askInstructions event");
+        self.translateInstructions();
     });
 }
 
@@ -171,6 +177,34 @@ ChainGame.prototype.getLanguageVarieties = function() {
 		}
 		self.player.emit(VALID_LANGUAGES, lvList);
 	});
+}
+
+ChainGame.prototype.translateInstructions = function(sourceLanguage) {
+        /* Lemmatically translates game's instructions and messages */
+        var self = this;
+
+        console.log("in translateInstuctions");
+        panlex.query('/ex',{"uid":sourceLanguage,"trtt":"your",limit:1,include:"trq",sort:"trq desc"},function(err,data){
+             data.result.forEach(function(ex) {
+                 self.instructionWords[0]=(ex.tt);
+             });
+        });
+        panlex.query('/ex',{"uid":sourceLanguage,"trtt":"language",limit:1,include:"trq",sort:"trq desc"},function(err,data){
+             data.result.forEach(function(ex) {
+                 self.instructionWords[1]=(ex.tt);
+             });
+        });
+        setTimeout(function(){
+            //keep looping until all instruction words have been translated
+            console.log(self.instructionWords.length);
+            if(self.instructionWords.length>=2){
+                console.log("will emit INSTRUCTIONS");
+                self.player.emit(INSTRUCTIONS,self.instructionWords);
+                console.log("just emitted INSTRUCTIONS");
+                //break;
+            }
+        },1000);
+        console.log("finished settimeout");
 }
 
 module.exports = ChainGame;

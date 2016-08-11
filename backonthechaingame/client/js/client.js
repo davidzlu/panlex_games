@@ -20,8 +20,10 @@ $(document).ready(function() {
     var RESET = "reset";
     var VALID_LANGUAGES = "validLanguages";
     var GET_UIDS = "getUids";
+    var INSTRUCTIONS = "instructions";
 
     //sock event listeners
+    sock.on(INSTRUCTIONS), onInstructionsTranslation;
     sock.on(LANG_SUCCESS, onLanguageSuccess);
     sock.on(LANG_FAIL, onLanguageFail);
     sock.on(SEND_WORDS, onReceiveStartWords);
@@ -56,6 +58,9 @@ $(document).ready(function() {
         curScreen.fadeOut();
         curScreen = $("#gameContainer");
         $("#currentLanguage").text(msg);
+        sock.emit("askInstructions",language);
+        console.log("just sent askInstructions event");
+
     }
 
     function onLanguageFail(msg) {
@@ -120,5 +125,12 @@ $(document).ready(function() {
             var langOption = $("<option>"+lvList[i]+"</option>");
             $("#selectSecondaryLang").append(langOption);
         }
+    }
+    
+    function onInstructionsTranslation(insnWords){
+       console.log("in onInstructionsTranslations");
+       for (var i=0; i<insnWords.length; i++) {
+           console.log(insnWords[i]);
+       }
     }
 });
