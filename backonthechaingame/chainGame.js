@@ -277,7 +277,7 @@ ChainGame.prototype.translateInstructions = function(sourceLanguage) {
                 console.log("just emitted INSTRUCTIONS");
                 //break;
             }
-        },4000);
+        },5000);
         console.log("finished settimeout");
 }
 
