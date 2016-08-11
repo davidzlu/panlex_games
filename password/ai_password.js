@@ -11,7 +11,7 @@ $(document).ready(function() {
   var first = true;
   var instructions = "";
   var passwordTrans;
-  var clueTrans;
+  var clueTrans="Clue";
   var revealLetter = 0;
   var winMessage;
   var thankyou;
@@ -477,6 +477,7 @@ correctly)*/
        }else if($("input:text").is(":visible")){
          displayGuess();
        return false;
+       }
     }
   });
   /*collects sourceLanguage from user input and sets footer language
