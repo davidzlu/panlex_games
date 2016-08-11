@@ -64,16 +64,29 @@ ChainGame.prototype.getWords = function() {
         this.targetWord = {tt:"sun", ex:557804, uid:"eng-000"};
         this.player.emit(SEND_WORDS, this.currentWord.tt, this.targetWord.tt);
     } else {
-        var count = 230000;    //hard-coded, corresponds approximately to number of expressions in eng-000 
-           //(will eventually be changed to a query of the PanLex database to find how many expressions exist)
-        var offset = Math.floor(count*Math.random()+20000);
-        this._queryForWord(this.player, this.playerLang, offset, 1);
+        var self = this;
+        panlex.query('/ex', {"uid":self.playerLang,"sort":"random","limit":1}, function(err, data) {
+            var ex = data.result[0];
+            self.currentWord.tt = ex.tt;
+            self.currentWord.ex = ex.ex
+            self.currentWord.uid = self.playerLang;
+            console.log(self.currentWord);
+            panlex.query('/ex', {"uid":self.playerLang,"sort":"random","limit":1}, function(err, data) {
+                var ex = data.result[0];
+                self.targetWord.tt = ex.tt;
+                self.targetWord.ex = ex.ex;
+                self.targetWord.uid = self.playerLang;
+                console.log(self.targetWord);
+                self.player.emit(SEND_WORDS, self.currentWord.tt, self.targetWord.tt);   //send word1 and word2 back to client
+                console.log("just sent words");
+            });
+        });
     }
 }
 
 ChainGame.prototype._queryForWord = function(sock, lang, offset, wrdNumber) {
     var self = this;
-    panlex.query('/ex', {uid:lang,offset:offset,limit:1}, function(err, data) {  //get one random expression from PanLex
+    panlex.query('/ex', {"uid":lang,"sort":"random","limit":1}, function(err, data) {  //get one random expression from PanLex
         data.result.forEach(function(ex) {
             if (wrdNumber == 1) {
                 self.currentWord.tt = ex.tt;
