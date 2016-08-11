@@ -70,7 +70,7 @@ $(document).ready(function() {
     /* Function for displaying messages in title. For debugging purposes.
      * Don"t keep in final game. Or at least modify heavily. */
     var msg = $("<p>" + text + "</p>");
-    $("#msgContainer").append(msg);
+    $("#msgContainer").prepend(msg);
   }
 
   function onPasswordSuccess(data) {
