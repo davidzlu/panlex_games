@@ -30739,6 +30739,10 @@ $(document).ready(function() {
                                                   data.result.forEach(function(trtt){
                                                       instructions = instructions + " " + trtt.tt;
                                                       passwordTrans = passwordTrans + " " + trtt.tt;
+                                                      var undef = $("h2").text().search("loading...");
+                                                      if(undef!=-1){
+                                                        $("h2").text(passwordTrans+" : loading...");
+                                                      }
                                                       panlex.query('/ex',{"uid":sourceLanguage,"trtt":"guess",limit:1,include:"trq",sort:"trq desc"},function(err,data){
                                                           data.result.forEach(function(trtt){
                                                               instructions = instructions + ".\n " + trtt.tt + " " + passwordTrans+ "?!";
@@ -30903,7 +30907,11 @@ $(document).ready(function() {
                 }
         data.result.forEach(function(trtt,password_id){
             //console.log("trtt: "+trtt.tt);
-            clue=trtt.tt+", "+clue;
+            if(counter==1){
+                clue=trtt.tt;
+            }else{
+                clue=trtt.tt+", "+clue;
+            }
                 if(len==0){
                     var count=230000;
                     offset = Math.floor(count*Math.random()+20000);
@@ -30949,7 +30957,7 @@ $(document).ready(function() {
       method: "post"});
     input = $('<input>', {type: "text", name: inputName});
     //var submitButton = $("<button>"+submitMess+"</button>", { type:"button", name:"submitButton"});
-    var submitButton = $('<button type="button" name="submit">Submit</button>');
+    var submitButton = $('<button type="button" name="submit">OK ✓</button>');
     //$('button[name=submitButton]').text(submitMess);
     //$('button[name=submitButton]').on("click", function(){
      //   getUserGuess();
@@ -31055,16 +31063,16 @@ correctly)*/
   function displayLanguages() {
     /* Handles transition from start screen to language input screen. */
     curScreen.fadeOut(function() {
-    $('button[name=helpButton]').remove();
+    //$('button[name=helpButton]').remove();
     //$("#helpButton").detach();
     //$("#languagesContainer").remove();
       first=true;
       revealLetter = 0;
       curScreen = $("#languages");
       $("p").first().next().replaceWith(langPrompt);
-      var helpButton = $("<button>Help</button>",{type:"button",name:"helpButton"});
-      curScreen.append(helpButton);
-      helpButton.on("click",function(){
+      //var helpButton = $("<button>Help</button>",{type:"button",name:"helpButton"});
+      //curScreen.append(helpButton);
+      $('button[name=help]').on("click",function(){
           var win = window.open("https://new.panlex.org/wp-content/uploads/2016/08/langs.txt", '_blank');
       });
       curScreen.fadeIn();
@@ -31124,8 +31132,7 @@ correctly)*/
   }
 
   $("#start button").on("click", displayLanguages);
-  /*if enter key is pressed on the start screen, it is as though the start 
-button
+  /*if enter key is pressed on the start screen, it is as though the start button
     has been pressed*/
   $(document).keypress(function(e){
     if(e.which == 13){
@@ -31142,13 +31149,13 @@ button
   /*collects sourceLanguage from user input and sets footer language
 message*/
 
-  $("#languages button").mousedown(function(){
+  $("button[name=next]").mousedown(function(){
     sourceLanguage = $("#sourceLanguage").val();
     //$("p:last").text("Playing in "+sourceLanguage);
     getInstructions();
   });
 
-  $("#languages button").on("mouseup", function(){
+  $("button[name=next]").on("mouseup", function(){
     if(sourceLanguage!=""){
         displayGuess();
         $("#helpButton").remove();

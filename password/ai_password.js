@@ -110,6 +110,10 @@ $(document).ready(function() {
                                                   data.result.forEach(function(trtt){
                                                       instructions = instructions + " " + trtt.tt;
                                                       passwordTrans = passwordTrans + " " + trtt.tt;
+                                                      var undef = $("h2").text().search("loading...");
+                                                      if(undef!=-1){
+                                                        $("h2").text(passwordTrans+" : loading...");
+                                                      }
                                                       panlex.query('/ex',{"uid":sourceLanguage,"trtt":"guess",limit:1,include:"trq",sort:"trq desc"},function(err,data){
                                                           data.result.forEach(function(trtt){
                                                               instructions = instructions + ".\n " + trtt.tt + " " + passwordTrans+ "?!";
@@ -197,19 +201,6 @@ $(document).ready(function() {
           });
       }
       if(sourceLanguage=="eng-000"){
-          submitMess="Submit";
-          $('button[name=submitButton]').text(submitMess);
-      }else{
-          panlex.query('/ex',{"uid":sourceLanguage,"trtt":"submit",limit:1,include:"trq",sort:"trq desc"},function(err,data){
-            data.result.forEach(function(trtt){
-              //console.log("passwordTrans: "+passwordTrans);
-              submitMess = trtt.tt;
-              console.log("submitMess: "+submitMess);
-              $('button[name=submitButton]').text(submitMess);
-            });
-          });
-      }
-      if(sourceLanguage=="eng-000"){
           moreClue="get another clue";
       }else{
           panlex.query('/ex',{"uid":sourceLanguage,"trtt":"more",limit:1,include:"trq",sort:"trq desc"},function(err,data){
@@ -247,7 +238,6 @@ $(document).ready(function() {
       panlex.query('/ex',{uid:sourceLanguage,offset:offset,limit:1},function(err,data){
           data.result.forEach(function (ex) {
               var wrd = ex.tt;
-              //console.log(offset+": "+wrd);
               if(wrd.indexOf(" ")==-1 && wrd.indexOf("\'"==-1)&&wrd.length<13){// && (new RegExp('[A-Z]')).test(wrd)==false){
                   getClue(wrd,ex.ex);
               }else{
@@ -264,21 +254,21 @@ $(document).ready(function() {
     panlex.query('/ex',{"uid":sourceLanguage,"trex":password_id},function(err,data,password_id){
         var counter = 1;
         var len = data.result.length;
-        //console.log("len: "+len);
                 if(len==0){
                     var count=230000;
                     offset = Math.floor(count*Math.random()+20000);
-                    //console.log(offset);
                     var stop = false;
                     getPassword();
                 }
         data.result.forEach(function(trtt,password_id){
-            //console.log("trtt: "+trtt.tt);
-            clue=trtt.tt+", "+clue;
+            if(counter==1){
+                clue=trtt.tt;
+            }else{
+                clue=trtt.tt+", "+clue;
+            }
                 if(len==0){
                     var count=230000;
                     offset = Math.floor(count*Math.random()+20000);
-                    //console.log(offset);
                     var stop = false;
                     getPassword();
                 }else{
@@ -286,7 +276,7 @@ $(document).ready(function() {
                         $("h3").html("<h3>"+clueTrans+":</h3>");
                         $("h3").html($("h3").html()+"<font color = \"990000\">"+clue+", </font>");
                         password = wrd;
-                        console.log("final password: "+password);
+                        console.log("final password chosen");
                         stop=true;
                         first=true;
                         createGuessForm(true);
@@ -298,7 +288,6 @@ $(document).ready(function() {
   }
   function star(){
     var starized = "";
-    //console.log("trying to starize "+password);
     if(password!=null){
         for(var j = 0; j < revealLetter; j++){
             starized = starized + password[j];
@@ -319,14 +308,7 @@ $(document).ready(function() {
       action: formAction,
       method: "post"});
     input = $('<input>', {type: "text", name: inputName});
-    //var submitButton = $("<button>"+submitMess+"</button>", { type:"button", name:"submitButton"});
-    var submitButton = $('<button type="button" name="submit">Submit</button>');
-    //$('button[name=submitButton]').text(submitMess);
-    //$('button[name=submitButton]').on("click", function(){
-     //   getUserGuess();
-     //   displayGuess();
-     //   console.log("submit button pressed");
-    //});
+    var submitButton = $('<button type="button" name="submit">OK ✓</button>');
     $('button[name=submitButton]').on("click", getUserGuess);
     $(':text').focus();
     form.append(input, '<br><br>', submitButton);
@@ -372,7 +354,6 @@ $(document).ready(function() {
                 //These 4 lines necessary prep for calling getPassword()
                 var count=230000;
                 offset = Math.floor(count*Math.random()+20000);
-                //console.log(offset);
                 var stop = false;
                 getPassword();
                 passText =  $("<h2>"+passwordTrans+" loading...</h2>");
@@ -404,7 +385,6 @@ correctly)*/
     var winScreen = $("<div>",{id:"winContainer"});
     first=true;
     var score = Math.ceil(((password.length - revealLetter)/password.length)*10);
-    //console.log("winMessage before adding: "+winMessage);
     var message = $("<h2>"+winMessage+"</h2><h3>Your score: <font color= \"990000\">"+score+"</font> points out of 10</h2><p>"+thankyou+"</p>");
     var againButton = $("<button>"+playAgain+"</button>", { type:"button", name:"againButton"});
     winScreen.append(message, againButton);
@@ -426,16 +406,11 @@ correctly)*/
   function displayLanguages() {
     /* Handles transition from start screen to language input screen. */
     curScreen.fadeOut(function() {
-    $('button[name=helpButton]').remove();
-    //$("#helpButton").detach();
-    //$("#languagesContainer").remove();
       first=true;
       revealLetter = 0;
       curScreen = $("#languages");
       $("p").first().next().replaceWith(langPrompt);
-      var helpButton = $("<button>Help</button>",{type:"button",name:"helpButton"});
-      curScreen.append(helpButton);
-      helpButton.on("click",function(){
+      $('button[name=help]').on("click",function(){
           var win = window.open("https://new.panlex.org/wp-content/uploads/2016/08/langs.txt", '_blank');
       });
       curScreen.fadeIn();
@@ -459,7 +434,6 @@ correctly)*/
         case "waiting":
           curScreen = $("#guess");
           $("guesserContainer").remove();
-          //console.log("about to creatGuessForm()");
           curScreen.append(createGuessForm(false)).fadeIn();
           $("input:text:visible:first").focus();
           break;
@@ -467,7 +441,6 @@ correctly)*/
           $('button[name=submitButton]').on("click", getUserGuess());
           if (guess == password) {
             curScreen = $("#win");
-            //console.log("WIN! calling createWinScreen");
             curScreen.append(createWinScreen()).fadeIn();
           } else {
             curScreen = $("#matching");
@@ -495,8 +468,7 @@ correctly)*/
   }
 
   $("#start button").on("click", displayLanguages);
-  /*if enter key is pressed on the start screen, it is as though the start 
-button
+  /*if enter key is pressed on the start screen, it is as though the start button
     has been pressed*/
   $(document).keypress(function(e){
     if(e.which == 13){
@@ -504,22 +476,19 @@ button
          $("#start button").focus().click();
        }else if($("input:text").is(":visible")){
          displayGuess();
-       }else{
-         //console.log("neither visible!");
-       }
        return false;
     }
   });
   /*collects sourceLanguage from user input and sets footer language
 message*/
 
-  $("#languages button").mousedown(function(){
+  $("button[name=next]").mousedown(function(){
     sourceLanguage = $("#sourceLanguage").val();
     //$("p:last").text("Playing in "+sourceLanguage);
     getInstructions();
   });
 
-  $("#languages button").on("mouseup", function(){
+  $("button[name=next]").on("mouseup", function(){
     if(sourceLanguage!=""){
         displayGuess();
         $("#helpButton").remove();
