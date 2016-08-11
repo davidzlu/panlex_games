@@ -70,9 +70,7 @@ $(document).ready(function() {
         var newLangMsg = $("<p id='chooseLangMsg'>Choose a language in which to list PanLex's translations/synonyms of <font color=\"FF0000\">"+curWord+": </font></p>");
         $("#chooseLangMsg").replaceWith(newLangMsg);
         $("#objectiveMsg").replaceWith($("<h3 id='objectiveMsg'>Can you get from <font color=\"FF0000\">"+curWord+"</font> to <font color=\"FF0000\">"+targetWord+"</font> using a chain of translations/synonyms?</h3>"));
-        curScreen.fadeIn(function() {
-            console.log("received "+word1+" and "+word2); 
-        });
+        curScreen.fadeIn();
     }
 
     function onReceiveTranslation(data) {

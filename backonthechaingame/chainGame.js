@@ -152,25 +152,24 @@ ChainGame.prototype.resetGame = function() {
 }
 
 ChainGame.prototype.getLanguageVarieties = function() {
-	/* Parameter:
-	 *   exp: a string of the expression to be translated
-	 * Returns:
-	 *   an array of uid strings
-	 * Gets uids of language varieties that have exp as a translation of
-	 * some expression in the language variety. */
+    /* Parameter:
+     *   exp: a string of the expression to be translated
+     * Returns:
+     *   an array of uid strings
+     * Gets uids of language varieties that have exp as a translation of
+     * some expression in the language variety. */
 
-	var params = {
-		trex: this.currentWord.ex,
-	};
-    console.log(this.currentWord);
-	var self = this;
-	panlex.query("/lv", params, function(err, data) {
-		var lvList = [];
-		for (var i=0; i<data.resultNum; i++) {
-			lvList.push(data.result[i].uid);
-		}
-		self.player.emit(VALID_LANGUAGES, lvList);
-	});
+    var params = {
+        trex: this.currentWord.ex,
+    };
+    var self = this;
+    panlex.query("/lv", params, function(err, data) {
+        var lvList = [];
+        for (var i=0; i<data.resultNum; i++) {
+            lvList.push(data.result[i].uid);
+        }
+        self.player.emit(VALID_LANGUAGES, lvList);
+    });
 }
 
 module.exports = ChainGame;
