@@ -25,6 +25,10 @@ $(document).ready(function() {
   sock.on(MSG, onMessage);
   sock.on(END_ROUND, onEndRound);
 
+  function focusInput() {
+    $("input").focus();
+  }
+
   function onEndRound(data) {
     var msg = data["msg"];
     GameState.clues = data["clues"];
@@ -55,10 +59,10 @@ $(document).ready(function() {
     GameState.curScreen.empty();
     if (GameState.role == "knower") {
       GameState.curScreen = $("#passwordContainer");
-      GameState.curScreen.append(createPasswordElement()).fadeIn();
+      GameState.curScreen.append(createPasswordElement()).fadeIn(focusInput);
     } else if (GameState.role == "guesser") {
       GameState.curScreen = $("#waitContainer");
-      GameState.curScreen.append(createWaitElement()).fadeIn();
+      GameState.curScreen.append(createWaitElement()).fadeIn(focusInput);
     }
   }
 
@@ -81,7 +85,7 @@ $(document).ready(function() {
     GameState.curScreen.fadeOut(function() {
       GameState.curScreen.empty();
       GameState.curScreen = $("#clueContainer");
-      GameState.curScreen.append(createClueElement()).fadeIn();
+      GameState.curScreen.append(createClueElement()).fadeIn(focusInput);
     });
   }
 
@@ -91,7 +95,7 @@ $(document).ready(function() {
      *   2) fades in current screen (because form submission fades out screen) */
     var msg = data["msg"];
     onMessage(msg);
-    GameState.curScreen.fadeIn();
+    GameState.curScreen.fadeIn(focusInput);
   }
 
   function onClueSuccess(data) {
@@ -110,7 +114,7 @@ $(document).ready(function() {
       GameState.curScreen.fadeOut(function() {
         GameState.curScreen.empty();
         GameState.curScreen = $("#waitContainer");
-        GameState.curScreen.append(createWaitElement()).fadeIn();
+        GameState.curScreen.append(createWaitElement()).fadeIn(focusInput);
       });
     } else if (GameState.role == "guesser") {
       GameState.clues = data["clues"];
@@ -118,7 +122,7 @@ $(document).ready(function() {
       GameState.curScreen.fadeOut(function() {
         GameState.curScreen.empty();
         GameState.curScreen = $("#guessContainer");
-        GameState.curScreen.append(createGuessElement()).fadeIn();
+        GameState.curScreen.append(createGuessElement()).fadeIn(focusInput);
       });
     }
   }
@@ -141,13 +145,13 @@ $(document).ready(function() {
       GameState.curScreen.fadeOut(function() {
         GameState.curScreen.empty();
         GameState.curScreen = $("#clueContainer");
-        GameState.curScreen.append(createClueElement()).fadeIn();
+        GameState.curScreen.append(createClueElement()).fadeIn(focusInput);
       });
     } else if (GameState.role == "guesser") {
       GameState.curScreen.fadeOut(function() {
         GameState.curScreen.empty();
         GameState.curScreen = $("#waitContainer");
-        GameState.curScreen.append(createWaitElement()).fadeIn();
+        GameState.curScreen.append(createWaitElement()).fadeIn(focusInput);
       });
     }
   }
@@ -162,7 +166,7 @@ $(document).ready(function() {
       GameState.curScreen.fadeOut(function() {
         GameState.curScreen.empty();
         GameState.curScreen = $("#matchingContainer");
-        GameState.curScreen.append("<p>Matching...</p>").fadeIn();
+        GameState.curScreen.append("<p>Matching...</p>").fadeIn(focusInput);
       });
     }
   }
@@ -228,9 +232,17 @@ $(document).ready(function() {
     var submitButton = $("<button>", {type: "button", name:inputName});
     submitButton.text("Submit");
     form.append(input, "<br/>", submitButton);
+
     submitButton.on("click", function() {
       sock.emit(socketEvent, $("input[name="+inputName+"]").val());
-      GameState.curScreen.fadeOut(); // to avoid multiple submissions at once?
+      GameState.curScreen.fadeOut();
+    });
+    input.keypress(function(e) {
+      if (e.which == 13) {
+        e.preventDefault();
+        sock.emit(socketEvent, $("input[name="+inputName+"]").val());
+        GameState.curScreen.fadeOut();
+      }
     });
     return form;
   }
@@ -251,14 +263,13 @@ $(document).ready(function() {
     /* Handles transition from start screen to language input screen. */
     GameState.curScreen.fadeOut(function() {
       GameState.curScreen = $("#languagesContainer");
-      GameState.curScreen.fadeIn();
+      GameState.curScreen.fadeIn(focusInput);
     });
   }
 
   function displayEnd() {
     /* Handles transition from translation data input to end screen. */
     GameState.curScreen.fadeOut(function() {
-      // Send data to server
       GameState.curScreen = $("#end");
       GameState.curScreen.fadeIn();
     });
@@ -267,10 +278,15 @@ $(document).ready(function() {
   function onLanguageSubmit() {
     var sourceLanguage = $("#sourceLanguage").val();
     sock.emit("language", sourceLanguage);
-    // if check is fast enough, no transition needed
   }
 
   // Local event listeners below
   $("#startContainer button").on("click", displayLanguages);
   $("#languagesContainer button").on("click", onLanguageSubmit);
+  $("#sourceLanguage").keypress(function(e) {
+    if (e.which == 13) {
+      e.preventDefault();
+      onLanguageSubmit();
+    }
+  });
 });
