@@ -30630,7 +30630,7 @@ function extend() {
 $(document).ready(function() {
   var panlex = require('panlex');
   var sourceLanguage = "default language"; // Assigned by user input
-  var curScreen = $("#start");
+  var curScreen = $("#languages");
   var role = "guess";
   var password;
   var password_id;
@@ -30657,6 +30657,8 @@ $(document).ready(function() {
   var langPrompt;
   var powerMess;
   var linkText;
+
+  displayLanguages();
 
   function getInstructions(){
       if(sourceLanguage=="eng-000"){
@@ -30740,6 +30742,7 @@ $(document).ready(function() {
                                                       instructions = instructions + " " + trtt.tt;
                                                       passwordTrans = passwordTrans + " " + trtt.tt;
                                                       var undef = $("h2").text().search("loading...");
+                                                      console.log("undef="+undef);
                                                       if(undef!=-1){
                                                         $("h2").text(passwordTrans+" : loading...");
                                                       }
@@ -31114,14 +31117,13 @@ message*/
 
   $("button[name=next]").mousedown(function(){
     sourceLanguage = $("#sourceLanguage").val();
-    //$("p:last").text("Playing in "+sourceLanguage);
-    getInstructions();
-  });
-
-  $("button[name=next]").on("mouseup", function(){
     if(sourceLanguage!=""){
         displayGuess();
-        $("#helpButton").remove();
+        //$("#helpButton").remove();
+        sourceLanguage = $("#sourceLanguage").val();
+        //$("p:last").text("Playing in "+sourceLanguage);
+        console.log("calling getInstructions");
+        getInstructions();
     }else{
         alert("Please enter a language!");
     }
