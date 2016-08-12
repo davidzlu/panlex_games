@@ -26,10 +26,15 @@ $(document).ready(function() {
   sock.on(END_ROUND, onEndRound);
 
   function focusInput() {
+    /* Called after a screen fades in to start cursor in input box. */
     $("input").focus();
   }
 
   function onEndRound(data) {
+    /* Parameter:
+	   *   data: a json object with expected fields: msg, clues, guesses, password 
+	   * Callback for END_ROUND event. Happens when a game round has ended, resets
+	   * fields in GameState and displays a message. */
     var msg = data["msg"];
     GameState.clues = data["clues"];
     GameState.guesses = data["guesses"];
@@ -37,7 +42,6 @@ $(document).ready(function() {
     onMessage(msg);
   }
 
-  // TODO: how to keep these variables around? Is this the most sensible way?
   var GameState = {
     curScreen: $("#startContainer"),
     role: "",
@@ -47,8 +51,10 @@ $(document).ready(function() {
   }
 
   function onMatched(data) {
-    /* Transition from waiting screen to game screens. Tell players
-     * their roles. */
+    /* Parameter:
+	   *   data: json object with expected fields: msg, role
+	   * Transition from waiting screen to game screens. Tell players
+     * their roles. Also called to begin another round between same players. */
     var msg = data["msg"];
     onMessage(msg);
     GameState.role = data["role"];
@@ -56,6 +62,7 @@ $(document).ready(function() {
   }
 
   function _matchToGame() {
+    /* Helper function for onMatched. Adjusts UI after players matched. */
     GameState.curScreen.empty();
     if (GameState.role == "knower") {
       GameState.curScreen = $("#passwordContainer");
@@ -67,14 +74,17 @@ $(document).ready(function() {
   }
 
   function onMessage(text) {
-    /* Function for displaying messages in title. For debugging purposes.
-     * Don"t keep in final game. Or at least modify heavily. */
+    /* Parameter:
+     *   text: a string of the message to be displayed
+     * Function for displaying messages in message container div. */
     var msg = $("<p>" + text + "</p>");
     $("#msgContainer").prepend(msg);
   }
 
   function onPasswordSuccess(data) {
-    /* This function:
+    /* Parameter:
+     *   data: json object, expected fields: msg, password
+     * This function:
      *   1) displays confirmation message from server.
      *   2) sets the password for the round
      *   3) empties the passwordContainer div of all elements
@@ -90,7 +100,9 @@ $(document).ready(function() {
   }
 
   function onInputFail(data) {
-    /* This function:
+    /* Parameter:
+     *   data: json object, expected fields: msg
+     * This function:
      *   1) displays the error message from server
      *   2) fades in current screen (because form submission fades out screen) */
     var msg = data["msg"];
@@ -99,7 +111,9 @@ $(document).ready(function() {
   }
 
   function onClueSuccess(data) {
-    /* For the knower, this function:
+    /* Parameter:
+     *   data: json object, expected fields: msg, clues, guesses
+     * For the knower, this function:
      *   1) displays confirmation message from server
      *   2) empties clueContainer div of all elements
      *   3) transitions to wait screen 
@@ -128,7 +142,9 @@ $(document).ready(function() {
   }
 
   function onGuessSuccess(data) {
-    /* Called when guess sent, but does not match password and less than 10 guesses sent.
+    /* Parameter:
+     *   data: json object, expected fields: msg, clues, guesses
+     * Called when guess sent, but does not match password and less than 10 guesses sent.
      * For the guesser, this function:
      *   1) displays confirmation from server
      *   2) empties guessContainer div of all elements
@@ -157,7 +173,9 @@ $(document).ready(function() {
   }
 
   function onLanguageSuccess(data) {
-    /* This function:
+    /* Parameter:
+     *   data: json object, expected fields: lang
+     * This function:
      *   1) Send confirmation messgage
      *   2) Transitions to matching screen */
     var sourceLanguage = data["lang"];
@@ -172,7 +190,9 @@ $(document).ready(function() {
   }
 
   function onLanguageFail(data) {
-    /* This function:
+    /* Parameter:
+     *   data: json object, expected fields: msg
+     * This function:
      *   1) Sends error message asking for another language */
     var msg = data["msg"];
     onMessage(msg);
@@ -224,9 +244,10 @@ $(document).ready(function() {
   }
 
   function _createFormElement(inputName, socketEvent) {
-    /* Creates an HTML form element that accepts text input.
-     * inputName: name of input element
-     * socketEvent: the event to emit upon submission */
+    /* Parameter:
+     *   inputName: string of name of input element
+     *   socketEvent: string of event to emit upon submission  
+     * Creates an HTML form element that accepts text input. */
     var form = $("<div>");
     var input = $("<input>", {type: "text", name: inputName});
     var submitButton = $("<button>", {type: "button", name:inputName});
@@ -248,6 +269,11 @@ $(document).ready(function() {
   }
 
   function _createSubmissionList(lst, lstname) {
+    /* Parameters:
+     *   lst: a string of the array to display. Expects "clues" or "guesses"
+     *   lstname: string of the heading of lst. Will be displayed to user.
+     * This function creates an ol of the submissions received so far, 
+     * and displays them the user. */
     var title = $("<ul>");
     title.append($("<li>"+lstname+"</li>"));
     var subList = $("<ol>");
@@ -276,6 +302,7 @@ $(document).ready(function() {
   }
 
   function onLanguageSubmit() {
+    /* Sends user-selected language to server for verification. */
     var sourceLanguage = $("#sourceLanguage").val();
     sock.emit("language", sourceLanguage);
   }
