@@ -2,30 +2,16 @@
   "name": "panlex_telephone_game",
   "version": "1.0.0",
   "description": "The objective of the Telephone Game is to get from a start word to a target word through a series of translations. It is an attempt at creating a panlingual game.",
-  "main": "server.js",
+  "main": "telephone_game.js",
   "dependencies": {
     "panlex": "^0.3.1",
     "express": "^4.14.0",
     "socket.io": "^1.4.8"
   },
-  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/davidzlu/panlex_games.git"
-  },
-  "keywords": [
-    "panlex",
-    "game",
-    "telephone"
-  ],
-  "author": "panlex interns 2016",
+  "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/davidzlu/panlex_games/issues"
-  },
-  "homepage": "https://github.com/davidzlu/panlex_games#readme"
 }

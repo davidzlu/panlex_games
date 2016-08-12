@@ -1,7 +1,7 @@
 // Based on https://github.com/Juriy/gamedev-demos/tree/master/rps/v2
 $(document).ready(function() {
 
-  var sock = io();
+  var sock = io('', { path: window.location.pathname + 'socket.io' });
   // Event names
   var MATCH_SUCCESS = "matchSuccess";
   var MATCH_FAIL = "matchFail";
@@ -37,6 +37,7 @@ $(document).ready(function() {
     onMessage(msg);
   }
 
+  // TODO: how to keep these variables around? Is this the most sensible way?
   var GameState = {
     curScreen: $("#startContainer"),
     role: "",

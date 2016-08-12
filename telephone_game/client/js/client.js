@@ -1,4 +1,4 @@
-var sock = io.connect();
+var sock = io.connect('', { path: window.location.pathname + 'socket.io' });
 
 $(document).ready(function() {
     

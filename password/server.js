@@ -9,13 +9,13 @@ var PasswordGame = require("./PasswordGame");
 var app = express();
 var server = http.createServer(app);
 var io = socketio(server);
-var PORT = 8000;
+var port = process.argv[2] || 8000;
 
 var waitingPlayer, waitingPlayerLang;
 
 app.use(express.static(__dirname + '/client'));
-server.listen(PORT, function() {
-  console.log('Server running at port: ' + PORT.toString() + '/');
+server.listen(port, function() {
+  console.log('Server started on port: ' + port);
 });
 
 io.on('connection', onConnection);
