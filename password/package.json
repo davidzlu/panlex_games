@@ -1,0 +1,40 @@
+{
+  "name": "panlex_password_game",
+  "version": "1.0.0",
+  "description": "The Password Game is a two-player word game, where one person creates a password and provides clues to a guesser, who attempts to guess the password.",
+  "main": "server.js",
+  "directories": {
+    "example": "example",
+    "test": "test"
+  },
+  "dependencies": {
+    "panlex": "^0.3.0",
+    "express": "^4.14.0",
+    "socket.io": "^1.4.8",
+    "chai": "^3.5.0",
+    "socket.io-client": "^1.4.8"
+  },
+  "devDependencies": {
+    "mocha": "^2.5.3"
+  },
+  "scripts": {
+    "test": "mocha",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/davidzlu/panlex_games.git"
+  },
+  "keywords": [
+    "panlex",
+    "game",
+    "interface",
+    "password"
+  ],
+  "author": "panlex interns 2016",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/davidzlu/panlex_games/issues"
+  },
+  "homepage": "https://github.com/davidzlu/panlex_games#readme"
+}

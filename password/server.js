@@ -21,12 +21,11 @@ server.listen(PORT, function() {
 io.on('connection', onConnection);
 
 function onConnection(sock) {
-  /* Function has 3 tasks:
-    1) Sends message to clients on connection
-    2) Sets up event listener for langauge selection
-    3) Matches players in pairs
-  */
-
+  /* Parameters:
+   *   sock: socket of a player who just connected
+   * Handles sending a welcome message to sock, and setting up event
+   * listeners for their disconnection and their language submission.
+   */
   sock.emit("msg", "Hello, You are playing Password!");
   sock.on("disconnect", function() {
     if (sock === waitingPlayer) {
@@ -46,6 +45,13 @@ function onConnection(sock) {
 }
 
 function _onLanguage(sock, lang) {
+  /* Parameters:
+   *   sock: the socket of a player
+   *   lang: the uid emitted by sock
+   * Called only if lang is a recognized uid. This function matches
+   * sock to another player. If none found, sock is held as waitingPlayer
+   * until another socket has emitted a valid uid.
+   */
   if (waitingPlayer && sock !== waitingPlayer) {
     sock.emit("languageSuccess", {"lang":lang, "waiting":false});
     new PasswordGame(waitingPlayer, waitingPlayerLang, sock, lang);

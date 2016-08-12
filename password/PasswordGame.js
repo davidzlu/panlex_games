@@ -7,6 +7,10 @@ var CLUE_SUCCESS = "clueSuccess";
 var GUESS_SUCCESS = "guessSuccess";
 var INPUT_FAIL = "inputFail";
 var END_ROUND = "endRound";
+var PASSWORD_SUBMIT = "passwordSubmit";
+var CLUE_SUBMIT = "clueSubmit";
+var GUESS_SUBMIT = "guessSubmit";
+var DISCONNECT = "disconnect";
 
 function PasswordGame(sock1, sock1Lang, sock2, sock2Lang) {
   /* An object that tracks the state of a game of Password for two players,
@@ -22,7 +26,7 @@ function PasswordGame(sock1, sock1Lang, sock2, sock2Lang) {
   this.translatedPassword = "";
   this.translatedClues = [];
   this.translatedGuesses = [];
-  this.roundLength = 10;
+  this.roundLength = 10; //Play around with value, find good number
 
   this._initSockets();
 };
@@ -47,20 +51,19 @@ PasswordGame.prototype._initSockets = function() {
       sock.emit(MATCH_SUCCESS, emitData);
     }
 
-    // Will need more verification of state in game to prevent cheating
-    sock.on("passwordSubmit", function(pword) {
+    sock.on(PASSWORD_SUBMIT, function(pword) {
       self._onReceivePassword(self.knower, pword);
     });
 
-    sock.on("clueSubmit", function(clue) {
+    sock.on(CLUE_SUBMIT, function(clue) {
       self._onReceiveClue(self.knower, clue);
     });
 
-    sock.on("guessSubmit", function(guess) {
+    sock.on(GUESS_SUBMIT, function(guess) {
       self._onReceiveGuess(self.guesser, guess);
     });
 
-    sock.on("disconnect", function() {
+    sock.on(DISCONNECT, function() {
       for (var j=0; j<self.sockets.length; j++) {
         self.sockets[j].emit("msg", "Player disconnected, please refresh");
       }
@@ -71,21 +74,18 @@ PasswordGame.prototype._initSockets = function() {
 // following 3 functions very troublesome for other languages
 PasswordGame.prototype._verifyPassword = function(pword) {
   /* Checks if pword satisfies game rules for passwords. */
-  //return true; //(any expression in PanLex)
-  return !/\s/.test(pword); //(no whitespace in expression)
-  //return /^[a-z]+$/.test(pword);
+  return true; //(any expression in PanLex)
+  //return !/\s/.test(pword); //(no whitespace in expression)
 };
 
 PasswordGame.prototype._verifyClue = function(clue) {
   /* Checks if clue satisfies game rules for clues. */
-  return !/\s/.test(clue) && this.password.indexOf(clue) == -1 && this.clues.indexOf(clue) == -1; //(no whitespace in expression)
-  //return /^[a-z]+$/.test(clue);
+  return this.password.indexOf(clue) == -1 && this.clues.indexOf(clue) == -1;
 };
 
 PasswordGame.prototype._verifyGuess = function(guess) {
   /* Checks if guess satisfies game rules for guesses. */
-  return !/\s/.test(guess) && this.guesses.indexOf(guess) == -1; //(no whitespace in expression)
-  //return /^[a-z]+$/.test(guess);
+  return this.guesses.indexOf(guess) == -1;
 };
 
 function _checkPanlexError(err, data, sock, cb) {
@@ -165,7 +165,7 @@ PasswordGame.prototype._onReceivePassword = function(sock, pword) {
       emitData = {
         "msg": pword + " was not found in PanLex. Please submit another."
       }
-      sock.emit('inputFail', emitData);
+      sock.emit(INPUT_FAIL, emitData);
     }
   }
 
@@ -184,7 +184,7 @@ PasswordGame.prototype._onReceivePassword = function(sock, pword) {
     var emitData = {
       "msg": pword + " does not follow rules for a password. Please submit another."
     };
-    sock.emit('inputFail', emitData);
+    sock.emit(INPUT_FAIL, emitData);
   }
 };
 
@@ -257,7 +257,7 @@ PasswordGame.prototype._onReceiveClue = function(sock, clue) {
     var emitData = {
       "msg": clue + " does not follow rules for clues. Please submit another."
     };
-    sock.emit('inputFail', emitData);
+    sock.emit(INPUT_FAIL, emitData);
   }
 }
 
@@ -302,7 +302,7 @@ PasswordGame.prototype._onReceiveGuess = function(sock, guess) {
       emitData = {
         "msg": guess + " not found in PanLex. Please submit another."
       };
-      sock.emit('inputFail', emitData);
+      sock.emit(INPUT_FAIL, emitData);
     }
   }
 
@@ -338,7 +338,7 @@ PasswordGame.prototype._onReceiveGuess = function(sock, guess) {
     var emitData = {
       "msg": guess + " does not follow rules for guesses. Please submit another."
     };
-    sock.emit('inputFail', emitData);
+    sock.emit(INPUT_FAIL, emitData);
   }
 }
 

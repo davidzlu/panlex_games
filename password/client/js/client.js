@@ -37,7 +37,6 @@ $(document).ready(function() {
     onMessage(msg);
   }
 
-  // TODO: how to keep these variables around? Is this the most sensible way?
   var GameState = {
     curScreen: $("#startContainer"),
     role: "",
