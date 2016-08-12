@@ -1,5 +1,5 @@
 var panlex = require("panlex");
-panlex.setUserAgent("Chain Game", "0.0");
+panlex.setUserAgent("Telephone Game", "0.0");
 
 var DEBUG = false; // set true to keep start and end words as ship and sun
 
@@ -15,7 +15,7 @@ var GET_UIDS = "getUids";
 var ASK_INS = "askInstructions"
 var INSTRUCTIONS = "instructions";
 
-function ChainGame(sock, lang) {
+function TelephoneGame(sock, lang) {
     /* Constructor function for creating an instance of the game. */
     this.player = sock;
     this.playerLang = lang;
@@ -34,7 +34,7 @@ function ChainGame(sock, lang) {
     this.initSocket(sock);
 }
 
-ChainGame.prototype.initSocket = function(sock) {
+TelephoneGame.prototype.initSocket = function(sock) {
     /* Sets up event listeners for socket */
     var self = this;
     sock.on(ASK_WORDS, function(lang) {
@@ -58,7 +58,7 @@ ChainGame.prototype.initSocket = function(sock) {
     });
 }
 
-ChainGame.prototype.getWords = function() {
+TelephoneGame.prototype.getWords = function() {
     if (DEBUG) {
         this.currentWord = {tt:"ship", ex:541362, uid:"eng-000"};
         this.targetWord = {tt:"sun", ex:557804, uid:"eng-000"};
@@ -84,7 +84,7 @@ ChainGame.prototype.getWords = function() {
     }
 }
 
-ChainGame.prototype._queryForWord = function(sock, lang, offset, wrdNumber) {
+TelephoneGame.prototype._queryForWord = function(sock, lang, offset, wrdNumber) {
     var self = this;
     panlex.query('/ex', {"uid":lang,"sort":"random","limit":1}, function(err, data) {  //get one random expression from PanLex
         data.result.forEach(function(ex) {
@@ -114,7 +114,7 @@ ChainGame.prototype._queryForWord = function(sock, lang, offset, wrdNumber) {
     });
 }
 
-ChainGame.prototype.getTranslations = function(targetLang) {
+TelephoneGame.prototype.getTranslations = function(targetLang) {
     /* Parameters:
      *   targetLang: uid of target language variety
      * Returns:
@@ -133,7 +133,7 @@ ChainGame.prototype.getTranslations = function(targetLang) {
     });
 }
 
-ChainGame.prototype.setCurrentWord = function(text, lang) {
+TelephoneGame.prototype.setCurrentWord = function(text, lang) {
     /* Parameters:
      *   exp: the expression string the player has chosen
      *   lang: the uid string of exp
@@ -155,7 +155,7 @@ ChainGame.prototype.setCurrentWord = function(text, lang) {
     }
 }
 
-ChainGame.prototype.isWinState = function() {
+TelephoneGame.prototype.isWinState = function() {
     /* Returns:
      *   a boolean
      * Checks if player has won game. true if currentWord matches targetWord.
@@ -164,13 +164,13 @@ ChainGame.prototype.isWinState = function() {
            this.currentWord.uid == this.targetWord.uid;
 }
 
-ChainGame.prototype.resetGame = function() {
+TelephoneGame.prototype.resetGame = function() {
     /* Resets state of game. */
     this.getWords();
     console.log("Reset game");
 }
 
-ChainGame.prototype.getLanguageVarieties = function() {
+TelephoneGame.prototype.getLanguageVarieties = function() {
     /* Parameter:
      *   exp: a string of the expression to be translated
      * Returns:
@@ -191,7 +191,7 @@ ChainGame.prototype.getLanguageVarieties = function() {
     });
 }
 
-ChainGame.prototype.translateInstructions = function(sourceLanguage) {
+TelephoneGame.prototype.translateInstructions = function(sourceLanguage) {
         /* Lemmatically translates game's instructions and messages */
         var self = this;
 
@@ -294,4 +294,4 @@ ChainGame.prototype.translateInstructions = function(sourceLanguage) {
         console.log("finished settimeout");
 }
 
-module.exports = ChainGame;
+module.exports = TelephoneGame;

@@ -1,4 +1,4 @@
-var sock = io.connect("http://127.0.0.1:8000");
+var sock = io.connect();
 
 $(document).ready(function() {
     

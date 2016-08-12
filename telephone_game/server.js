@@ -2,7 +2,7 @@ var http = require('http');
 var socketio = require("socket.io");
 var express = require("express");
 var panlex = require("panlex");
-var ChainGame = require("./chainGame.js");
+var TelephoneGame = require("./telephone_game.js");
 
 var app = express();
 var server = http.createServer(app);
@@ -30,7 +30,7 @@ function _onLanguage(sock, lang) {
 	panlex.query("/lv", {"uid":lang}, function(err, data) {
 		if (data.resultNum > 0) {
 			sock.emit("languageSuccess", "Playing in "+lang);
-			new ChainGame(sock, lang);
+			new TelephoneGame(sock, lang);
 		} else {
 			sock.emit("languageFail", "Error, can't find that language.");
 		}
