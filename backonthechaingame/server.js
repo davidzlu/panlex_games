@@ -7,11 +7,11 @@ var ChainGame = require("./chainGame.js");
 var app = express();
 var server = http.createServer(app);
 var io = socketio(server);
-var PORT = 8000;
+var port = process.argv[2] || 8000;
 
 app.use(express.static(__dirname + '/client'));
-server.listen(8000, function() {
-	console.log("Server started on port: "+PORT.toString());
+server.listen(port, function() {
+	console.log("Server started on port: " + port);
 });
 
 io.on("connection", function(sock) {
