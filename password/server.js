@@ -14,7 +14,7 @@ var port = process.argv[2] || 8000;
 var waitingPlayer, waitingPlayerLang;
 
 app.use(express.static(__dirname + '/client'));
-server.listen(port, function() {
+server.listen(port, 'localhost', function() {
   console.log('Server started on port: ' + port);
 });
 
